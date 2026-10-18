@@ -1238,63 +1238,584 @@
     buildStage0AlhambraTextures() {
       const textures = {};
 
-      // 1. Reddish Clay / Tapial Limestone Masonry for the Alhambra ("La Roja")
-      const wallCanvas = document.createElement('canvas');
-      wallCanvas.width = 256;
-      wallCanvas.height = 256;
-      const wCtx = wallCanvas.getContext('2d');
-      wCtx.fillStyle = '#9e472a';
-      wCtx.fillRect(0, 0, 256, 256);
+      // ------------------------------------------------------------------------
+      // 1. TAPIAL CALICOSTRADO NAZARÍ ("LA ROJA" / AL-HAMRA) - 512x512
+      // ------------------------------------------------------------------------
+      // Encofrado tradicional andalusí de tapia calicostrada con cajones de ~80cm,
+      // tongadas horizontales de apisonado, vetas de costra de cal apagada y gravilla de la Sabika.
+      const tapialCanvas = document.createElement('canvas');
+      tapialCanvas.width = 512;
+      tapialCanvas.height = 512;
+      const tpCtx = tapialCanvas.getContext('2d');
 
-      // Ashlar blocks and horizontal rammed earth layering
-      for (let y = 0; y < 256; y += 16) {
-        wCtx.fillStyle = (y % 32 === 0) ? '#8a371e' : '#ba5a31';
-        wCtx.fillRect(0, y, 256, 15);
-        wCtx.fillStyle = '#5c2211';
-        wCtx.fillRect(0, y + 15, 256, 1);
-        const xOffset = (y % 32 === 0) ? 0 : 24;
-        for (let x = xOffset; x < 256; x += 48) {
-          wCtx.fillStyle = '#5c2211';
-          wCtx.fillRect(x, y, 1, 15);
+      const tapialHeightCanvas = document.createElement('canvas');
+      tapialHeightCanvas.width = 512;
+      tapialHeightCanvas.height = 512;
+      const tpHCtx = tapialHeightCanvas.getContext('2d');
+
+      // Base: Arcilla roja bermeja de la colina de la Sabika
+      tpCtx.fillStyle = '#9c3b21';
+      tpCtx.fillRect(0, 0, 512, 512);
+      tpHCtx.fillStyle = '#808080';
+      tpHCtx.fillRect(0, 0, 512, 512);
+
+      // Cajones de tapia (4 cursos de encofrado de 128px de altura)
+      const cajonTones = ['#a84326', '#91331c', '#b85433', '#9c3b21'];
+      for (let c = 0; c < 4; c++) {
+        const cY = c * 128;
+        tpCtx.fillStyle = cajonTones[c];
+        tpCtx.fillRect(0, cY, 512, 128);
+
+        // Tongadas horizontales de apisonado (compactación con pisón de madera)
+        for (let t = 0; t < 6; t++) {
+          const tY = cY + t * 21;
+          const bandAlpha = (t % 2 === 0) ? 0.08 : 0.04;
+          tpCtx.fillStyle = (t % 2 === 0) ? `rgba(0,0,0,${bandAlpha})` : `rgba(235,170,120,${bandAlpha})`;
+          tpCtx.fillRect(0, tY, 512, 21);
+
+          // Variación ondulada en el apisonado
+          tpCtx.beginPath();
+          tpCtx.moveTo(0, tY);
+          for (let x = 0; x <= 512; x += 32) {
+            const wave = Math.sin((x + c * 40) * 0.05) * 2.5;
+            tpCtx.lineTo(x, tY + wave);
+          }
+          tpCtx.lineTo(512, tY + 12);
+          tpCtx.lineTo(0, tY + 12);
+          tpCtx.closePath();
+          tpCtx.fillStyle = `rgba(145, 51, 28, 0.15)`;
+          tpCtx.fill();
+        }
+
+        // Costra de cal apagada (calicostrado): lechada de cal vertida junto a las tablas del tapial
+        for (let v = 0; v < 3; v++) {
+          const vY = cY + 18 + v * 38;
+          tpCtx.beginPath();
+          tpCtx.moveTo(0, vY);
+          for (let x = 0; x <= 512; x += 16) {
+            const offset = Math.sin(x * 0.03 + v * 2) * 5 + Math.cos(x * 0.08) * 3;
+            tpCtx.lineTo(x, vY + offset);
+          }
+          tpCtx.lineWidth = 3 + (v % 2) * 2.5;
+          tpCtx.strokeStyle = (v % 2 === 0) ? 'rgba(232, 196, 162, 0.42)' : 'rgba(217, 160, 122, 0.35)';
+          tpCtx.stroke();
+
+          // También añadir relieve en el mapa de altura
+          tpHCtx.beginPath();
+          tpHCtx.moveTo(0, vY);
+          for (let x = 0; x <= 512; x += 16) {
+            const offset = Math.sin(x * 0.03 + v * 2) * 5 + Math.cos(x * 0.08) * 3;
+            tpHCtx.lineTo(x, vY + offset);
+          }
+          tpHCtx.lineWidth = 4;
+          tpHCtx.strokeStyle = 'rgba(165, 165, 165, 0.35)';
+          tpHCtx.stroke();
+        }
+
+        // Juntas horizontales entre cajones de tapia (rehundido de los tablones)
+        tpCtx.fillStyle = '#42140a';
+        tpCtx.fillRect(0, cY + 126, 512, 2);
+        tpCtx.fillStyle = 'rgba(240, 215, 190, 0.35)';
+        tpCtx.fillRect(0, cY, 512, 1.5);
+
+        // Hendidura en el mapa de altura para normal pronunciada
+        tpHCtx.fillStyle = '#222222';
+        tpHCtx.fillRect(0, cY + 125, 512, 3);
+        tpHCtx.fillStyle = '#d0d0d0';
+        tpHCtx.fillRect(0, cY, 512, 2);
+
+        // Mechinales (orificios de las agujas de madera del encofrado nazarí)
+        const mechinalX = [64 + (c % 2) * 64, 320 + (c % 2) * 64];
+        mechinalX.forEach(mx => {
+          tpCtx.fillStyle = '#220804';
+          tpCtx.fillRect(mx - 4, cY + 118, 9, 7);
+          tpCtx.fillStyle = 'rgba(232, 196, 162, 0.4)';
+          tpCtx.fillRect(mx - 6, cY + 125, 13, 2);
+
+          tpHCtx.fillStyle = '#101010';
+          tpHCtx.fillRect(mx - 4, cY + 118, 9, 7);
+        });
+      }
+
+      // Inclusiones de gravilla y cantos rodados de la Sabika (áridos de cuarzo y caliza)
+      let rngSeed = 42;
+      const pseudoRng = () => {
+        rngSeed = (rngSeed * 9301 + 49297) % 233280;
+        return rngSeed / 233280;
+      };
+
+      const pebbleColors = ['#dfd8cf', '#9b8f83', '#5a4f47', '#c8a87a', '#eee5da'];
+      for (let p = 0; p < 180; p++) {
+        const px = pseudoRng() * 512;
+        const py = pseudoRng() * 512;
+        const pr = 1.2 + pseudoRng() * 3.6;
+        const pCol = pebbleColors[Math.floor(pseudoRng() * pebbleColors.length)];
+
+        // Sombra arrojada del canto
+        tpCtx.beginPath();
+        tpCtx.arc(px + 1, py + 1, pr, 0, Math.PI * 2);
+        tpCtx.fillStyle = 'rgba(30, 8, 4, 0.45)';
+        tpCtx.fill();
+
+        // Canto de gravilla
+        tpCtx.beginPath();
+        tpCtx.arc(px, py, pr, 0, Math.PI * 2);
+        tpCtx.fillStyle = pCol;
+        tpCtx.fill();
+
+        // Brillo superior
+        tpCtx.beginPath();
+        tpCtx.arc(px - pr * 0.3, py - pr * 0.3, pr * 0.45, 0, Math.PI * 2);
+        tpCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        tpCtx.fill();
+
+        // Relieve en heightmap
+        tpHCtx.beginPath();
+        tpHCtx.arc(px, py, pr, 0, Math.PI * 2);
+        tpHCtx.fillStyle = '#e5e5e5';
+        tpHCtx.fill();
+      }
+
+      // Textura granular per-pixel de porosidad mineral
+      const tpImg = tpCtx.getImageData(0, 0, 512, 512);
+      const tpHImg = tpHCtx.getImageData(0, 0, 512, 512);
+      for (let i = 0; i < tpImg.data.length; i += 4) {
+        const n = (Math.random() - 0.5) * 26;
+        tpImg.data[i]     = Math.max(0, Math.min(255, tpImg.data[i] + n * 1.2));
+        tpImg.data[i + 1] = Math.max(0, Math.min(255, tpImg.data[i + 1] + n * 0.7));
+        tpImg.data[i + 2] = Math.max(0, Math.min(255, tpImg.data[i + 2] + n * 0.5));
+
+        const hn = (Math.random() - 0.5) * 16;
+        tpHImg.data[i]     = Math.max(0, Math.min(255, tpHImg.data[i] + hn));
+        tpHImg.data[i + 1] = tpHImg.data[i];
+        tpHImg.data[i + 2] = tpHImg.data[i];
+      }
+      tpCtx.putImageData(tpImg, 0, 0);
+      tpHCtx.putImageData(tpHImg, 0, 0);
+
+      textures.tapialMap = new THREE.CanvasTexture(tapialCanvas);
+      textures.tapialMap.wrapS = THREE.RepeatWrapping;
+      textures.tapialMap.wrapT = THREE.RepeatWrapping;
+      textures.tapialNormal = this.generateStage0NormalMap(tapialHeightCanvas, 3.6);
+
+
+      // ------------------------------------------------------------------------
+      // 2. ALMOHADILLADO RENACENTISTA DEL PALACIO DE CARLOS V - 512x512
+      // ------------------------------------------------------------------------
+      // Diseño de Pedro Machuca: sillares almohadillados en piedra arenisca dorada
+      // de Santa Pudia, con profundas juntas rehundidas en V y almohadillas convexas.
+      const carlosCanvas = document.createElement('canvas');
+      carlosCanvas.width = 512;
+      carlosCanvas.height = 512;
+      const cCtx = carlosCanvas.getContext('2d');
+
+      const carlosHeightCanvas = document.createElement('canvas');
+      carlosHeightCanvas.width = 512;
+      carlosHeightCanvas.height = 512;
+      const cHCtx = carlosHeightCanvas.getContext('2d');
+
+      const cImg = cCtx.createImageData(512, 512);
+      const cHImg = cHCtx.createImageData(512, 512);
+      const cData = cImg.data;
+      const cHData = cHImg.data;
+
+      // Cálculo geométrico de almohadillado con junta en V y domo convexo continuo
+      for (let y = 0; y < 512; y++) {
+        const ry = Math.floor(y / 128);
+        const ly = y % 128;
+        const distY = Math.min(ly, 128 - ly);
+        const isOddRow = (ry % 2 === 1);
+        const offsetX = isOddRow ? 128 : 0;
+
+        for (let x = 0; x < 512; x++) {
+          const lx = (x + 512 - offsetX) % 256;
+          const distX = Math.min(lx, 256 - lx);
+          const edgeDist = Math.min(distX, distY);
+
+          const idx = (y * 512 + x) * 4;
+
+          let r, g, b, hVal;
+
+          if (edgeDist < 5) {
+            // Fondo de la junta rehundida en V (mortero profundo en sombra)
+            r = 45; g = 28; b = 18;
+            hVal = 18;
+          } else if (edgeDist < 28) {
+            // Bisel perimetral inclinado a 45 grados
+            const t = (edgeDist - 5) / 23.0;
+            hVal = Math.floor(25 + t * 175);
+
+            // Dirección del bisel respecto a la luz crepuscular (luz desde superior izquierda)
+            const isTopOrLeft = (ly < 28) || (lx < 28);
+            if (isTopOrLeft) {
+              // Faceta orientada al sol poniente: oro cálido brillante
+              r = Math.floor(215 + t * 15);
+              g = Math.floor(175 + t * 15);
+              b = Math.floor(125 + t * 15);
+            } else {
+              // Faceta en sombra propia inferior/derecha
+              r = Math.floor(125 + t * 45);
+              g = Math.floor(88 + t * 35);
+              b = Math.floor(52 + t * 25);
+            }
+          } else {
+            // Almohadilla convexa central (domo redondeado de Pedro Machuca)
+            const u = (distX - 28) / (128 - 28);
+            const v = (distY - 28) / (64 - 28);
+            const cushion = Math.sin(Math.min(1.0, u) * Math.PI * 0.5) * Math.sin(Math.min(1.0, v) * Math.PI * 0.5);
+            hVal = Math.floor(200 + cushion * 50);
+
+            // Arenisca de Santa Pudia con suave gradiente de relieve
+            const lightFactor = 0.90 + cushion * 0.18 + ((ly < 64 ? 1 : -0.5) * 0.06);
+            r = Math.floor(Math.min(255, 194 * lightFactor));
+            g = Math.floor(Math.min(255, 148 * lightFactor));
+            b = Math.floor(Math.min(255, 98 * lightFactor));
+          }
+
+          // Grano fino de arenisca (porosidad calcarenita de Santa Pudia)
+          const grain = (Math.random() - 0.5) * 18;
+          cData[idx]     = Math.max(0, Math.min(255, r + grain * 1.1));
+          cData[idx + 1] = Math.max(0, Math.min(255, g + grain * 0.8));
+          cData[idx + 2] = Math.max(0, Math.min(255, b + grain * 0.6));
+          cData[idx + 3] = 255;
+
+          const hGrain = (Math.random() - 0.5) * 10;
+          const finalH = Math.max(0, Math.min(255, hVal + hGrain));
+          cHData[idx]     = finalH;
+          cHData[idx + 1] = finalH;
+          cHData[idx + 2] = finalH;
+          cHData[idx + 3] = 255;
         }
       }
 
-      // Procedural surface grain
-      const wImg = wCtx.getImageData(0, 0, 256, 256);
-      for (let i = 0; i < wImg.data.length; i += 4) {
-        const n = (Math.random() - 0.5) * 24;
-        wImg.data[i] = Math.max(0, Math.min(255, wImg.data[i] + n * 1.2));
-        wImg.data[i + 1] = Math.max(0, Math.min(255, wImg.data[i + 1] + n * 0.7));
-        wImg.data[i + 2] = Math.max(0, Math.min(255, wImg.data[i + 2] + n * 0.5));
-      }
-      wCtx.putImageData(wImg, 0, 0);
-      textures.wallMap = new THREE.CanvasTexture(wallCanvas);
-      textures.wallMap.wrapS = THREE.RepeatWrapping;
-      textures.wallMap.wrapT = THREE.RepeatWrapping;
-      textures.wallNormal = this.generateStage0NormalMap(wallCanvas, 3.2);
+      cCtx.putImageData(cImg, 0, 0);
+      cHCtx.putImageData(cHImg, 0, 0);
 
-      // 2. Arab Curved Terracotta Roof Tiles (Tejas Árabes)
-      const tileCanvas = document.createElement('canvas');
-      tileCanvas.width = 128;
-      tileCanvas.height = 128;
-      const tCtx = tileCanvas.getContext('2d');
-      tCtx.fillStyle = '#bd4c22';
-      tCtx.fillRect(0, 0, 128, 128);
-      for (let x = 0; x < 128; x += 16) {
-        const grad = tCtx.createLinearGradient(x, 0, x + 16, 0);
-        grad.addColorStop(0, '#581d0a');
-        grad.addColorStop(0.3, '#d4653a');
-        grad.addColorStop(0.7, '#bd4c22');
-        grad.addColorStop(1, '#581d0a');
-        tCtx.fillStyle = grad;
-        tCtx.fillRect(x, 0, 16, 128);
+      // Incrustaciones de microfósiles y marcas de gradina / bujardado
+      cCtx.fillStyle = 'rgba(250, 240, 225, 0.45)';
+      for (let f = 0; f < 120; f++) {
+        const fx = Math.random() * 512;
+        const fy = Math.random() * 512;
+        cCtx.fillRect(fx, fy, 2, 1.5);
       }
+
+      textures.carlosVMap = new THREE.CanvasTexture(carlosCanvas);
+      textures.carlosVMap.wrapS = THREE.RepeatWrapping;
+      textures.carlosVMap.wrapT = THREE.RepeatWrapping;
+      textures.carlosVNormal = this.generateStage0NormalMap(carlosHeightCanvas, 4.4);
+
+
+      // ------------------------------------------------------------------------
+      // 3. TEJA ÁRABE NAZARÍ (CUBIERTAS DE TEJA CURVA A CUATRO AGUAS) - 256x256
+      // ------------------------------------------------------------------------
+      // Hiladas longitudinales de teja curva árabe (canales y cobijas) con gradientes
+      // cilíndricos de sombra, variaciones tonales de cocción de horno cerámico,
+      // marcas de envejecimiento y pátinas minerales.
+      const tileCanvas = document.createElement('canvas');
+      tileCanvas.width = 256;
+      tileCanvas.height = 256;
+      const tCtx = tileCanvas.getContext('2d');
+
+      const tileHeightCanvas = document.createElement('canvas');
+      tileHeightCanvas.width = 256;
+      tileHeightCanvas.height = 256;
+      const tHCtx = tileHeightCanvas.getContext('2d');
+
+      const tImg = tCtx.createImageData(256, 256);
+      const tHImg = tHCtx.createImageData(256, 256);
+      const tData = tImg.data;
+      const tHData = tHImg.data;
+
+      // 8 columnas de teja (32px de ancho cada una) y 4 hiladas de solape longitudinal (64px)
+      const tileBakeTones = [
+        [184, 71, 35],  // #b84723
+        [217, 101, 59], // #d9653b
+        [138, 43, 16],  // #8a2b10
+        [204, 88, 41],  // #cc5829
+        [224, 122, 74], // #e07a4a
+        [160, 52, 22],  // #a03416
+        [196, 78, 38],  // #c44e26
+        [148, 46, 18]   // #942e12
+      ];
+
+      for (let y = 0; y < 256; y++) {
+        const course = Math.floor(y / 64);
+        const ly = y % 64;
+        const isOverlapLip = (ly >= 58);
+        const isOverlapShadow = (ly < 6);
+
+        for (let x = 0; x < 256; x++) {
+          const col = Math.floor(x / 32);
+          const lx = x % 32;
+          const ang = (lx / 32) * Math.PI;
+          const curve = Math.sin(ang);
+
+          const tileSeed = (course * 8 + col) % tileBakeTones.length;
+          const baseRgb = tileBakeTones[tileSeed];
+
+          // Sombreado cilíndrico direccional (luz crepuscular desde superior izquierda)
+          let shade = 0.50 + curve * 0.70;
+          if (lx < 16) {
+            shade += (1.0 - lx / 16) * 0.25;
+          } else {
+            shade -= ((lx - 16) / 16) * 0.35;
+          }
+
+          if (isOverlapShadow) {
+            shade *= (0.45 + (ly / 6) * 0.50);
+          } else if (isOverlapLip) {
+            shade *= 1.15;
+          }
+
+          let r = Math.floor(Math.max(0, Math.min(255, baseRgb[0] * shade)));
+          let g = Math.floor(Math.max(0, Math.min(255, baseRgb[1] * shade)));
+          let b = Math.floor(Math.max(0, Math.min(255, baseRgb[2] * shade)));
+
+          // Pátina de musgo seco / líquen en el canal cóncavo (acumulación de humedad)
+          if (curve < 0.28) {
+            const mossFactor = (0.28 - curve) / 0.28;
+            r = Math.floor(r * (1.0 - mossFactor * 0.45) + 88 * mossFactor * 0.45);
+            g = Math.floor(g * (1.0 - mossFactor * 0.50) + 102 * mossFactor * 0.50);
+            b = Math.floor(b * (1.0 - mossFactor * 0.45) + 48 * mossFactor * 0.45);
+          }
+
+          const noise = (Math.random() - 0.5) * 14;
+          const idx = (y * 256 + x) * 4;
+          tData[idx]     = Math.max(0, Math.min(255, r + noise));
+          tData[idx + 1] = Math.max(0, Math.min(255, g + noise * 0.7));
+          tData[idx + 2] = Math.max(0, Math.min(255, b + noise * 0.5));
+          tData[idx + 3] = 255;
+
+          // Heightmap: perfil semicilíndrico acanalado con solape
+          let h = curve * 190 + (isOverlapLip ? 35 : 0) - (isOverlapShadow ? 45 : 0);
+          h = Math.max(10, Math.min(255, h + (Math.random() - 0.5) * 8));
+          tHData[idx]     = h;
+          tHData[idx + 1] = h;
+          tHData[idx + 2] = h;
+          tHData[idx + 3] = 255;
+        }
+      }
+
+      tCtx.putImageData(tImg, 0, 0);
+      tHCtx.putImageData(tHImg, 0, 0);
+
       textures.tileMap = new THREE.CanvasTexture(tileCanvas);
       textures.tileMap.wrapS = THREE.RepeatWrapping;
       textures.tileMap.wrapT = THREE.RepeatWrapping;
-      textures.tileNormal = this.generateStage0NormalMap(tileCanvas, 3.8);
+      textures.tileNormal = this.generateStage0NormalMap(tileHeightCanvas, 4.2);
 
-      // 3. Sun Halo / Corona Glow Texture
+
+      // ------------------------------------------------------------------------
+      // 4. ARQUERÍA NAZARÍ Y CELOSÍAS (AJIMEZ / VENTANAS DE COMARES Y EL PARTAL) - 256x256
+      // ------------------------------------------------------------------------
+      // Arco de herradura apuntado andalusí con dovelas de yesería labrada y celosía
+      // geométrica islámica (lazos de 8 / estrellas) sobre fondo oscuro, con reborde dorado al atardecer.
+      const ajimezCanvas = document.createElement('canvas');
+      ajimezCanvas.width = 256;
+      ajimezCanvas.height = 256;
+      const aCtx = ajimezCanvas.getContext('2d');
+
+      // Fondo transparente
+      aCtx.clearRect(0, 0, 256, 256);
+
+      // Alfiz exterior (moldura rectangular de yesería nazarí)
+      aCtx.fillStyle = '#dfcfba';
+      aCtx.fillRect(16, 16, 224, 224);
+
+      // Borde exterior del alfiz con relieve sombreado
+      aCtx.lineWidth = 4;
+      aCtx.strokeStyle = '#8a6e55';
+      aCtx.strokeRect(18, 18, 220, 220);
+
+      aCtx.lineWidth = 2;
+      aCtx.strokeStyle = '#fff0dc';
+      aCtx.strokeRect(22, 22, 212, 212);
+
+      // Albanegas / Enjutas con motivos arabescos / ataurique
+      aCtx.fillStyle = '#cbb396';
+      aCtx.fillRect(24, 24, 208, 60);
+
+      // Vaciado del arco de herradura túmido apuntado nazarí
+      const drawHorseshoePath = (ctx, cx, cy, r, bottomY) => {
+        ctx.beginPath();
+        ctx.moveTo(cx - r * 0.75, bottomY);
+        ctx.bezierCurveTo(cx - r * 1.05, bottomY - 20, cx - r * 1.02, cy, cx - r, cy - 25);
+        ctx.bezierCurveTo(cx - r * 0.6, cy - 65, cx - 12, cy - 88, cx, cy - 92);
+        ctx.bezierCurveTo(cx + 12, cy - 88, cx + r * 0.6, cy - 65, cx + r, cy - 25);
+        ctx.bezierCurveTo(cx + r * 1.02, cy, cx + r * 1.05, bottomY - 20, cx + r * 0.75, bottomY);
+        ctx.closePath();
+      };
+
+      // Interior oscuro crepuscular (penumbra del palacio)
+      drawHorseshoePath(aCtx, 128, 140, 72, 230);
+      aCtx.fillStyle = 'rgba(20, 9, 8, 0.94)';
+      aCtx.fill();
+
+      // Dovelas radiantes en el intradós del arco
+      const numDovelas = 17;
+      for (let d = 0; d < numDovelas; d++) {
+        const theta = Math.PI + 0.35 + (d / (numDovelas - 1)) * (Math.PI - 0.70);
+        const rIn = 72;
+        const rOut = 84;
+        const x1 = 128 + Math.cos(theta) * rIn;
+        const y1 = 138 + Math.sin(theta) * (rIn * 1.15);
+        const x2 = 128 + Math.cos(theta) * rOut;
+        const y2 = 138 + Math.sin(theta) * (rOut * 1.15);
+
+        aCtx.beginPath();
+        aCtx.moveTo(x1, y1);
+        aCtx.lineTo(x2, y2);
+        aCtx.lineWidth = 3.5;
+        aCtx.strokeStyle = (d % 2 === 0) ? '#f2e5d3' : '#cca983';
+        aCtx.stroke();
+      }
+
+      // Reborde dorado crepuscular andalusí (resplandor del atardecer en la yesería)
+      drawHorseshoePath(aCtx, 128, 140, 72, 230);
+      aCtx.lineWidth = 3;
+      aCtx.strokeStyle = '#ffd166';
+      aCtx.stroke();
+
+      // Celosía geométrica islámica (lazo de 8 puntas / estrellas khatam)
+      aCtx.save();
+      drawHorseshoePath(aCtx, 128, 140, 70, 228);
+      aCtx.clip();
+
+      const drawIslamicStar8 = (ctx, sx, sy, radius) => {
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 1.8;
+        for (let pass = 0; pass < 2; pass++) {
+          ctx.beginPath();
+          for (let i = 0; i < 4; i++) {
+            const angle = (pass * Math.PI / 4) + (i * Math.PI / 2);
+            const px = Math.cos(angle) * radius;
+            const py = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const a = i * Math.PI / 4;
+          ctx.moveTo(Math.cos(a) * (radius * 0.5), Math.sin(a) * (radius * 0.5));
+          ctx.lineTo(Math.cos(a) * (radius * 1.3), Math.sin(a) * (radius * 1.3));
+        }
+        ctx.strokeStyle = '#c68a4c';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.restore();
+      };
+
+      drawIslamicStar8(aCtx, 128, 120, 24);
+      drawIslamicStar8(aCtx, 96, 168, 18);
+      drawIslamicStar8(aCtx, 160, 168, 18);
+      drawIslamicStar8(aCtx, 128, 70, 15);
+      drawIslamicStar8(aCtx, 128, 212, 18);
+
+      aCtx.beginPath();
+      for (let diag = 60; diag <= 200; diag += 24) {
+        aCtx.moveTo(diag - 50, 60);
+        aCtx.lineTo(diag + 50, 230);
+        aCtx.moveTo(diag + 50, 60);
+        aCtx.lineTo(diag - 50, 230);
+      }
+      aCtx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+      aCtx.lineWidth = 1.0;
+      aCtx.stroke();
+
+      aCtx.restore();
+
+      textures.ajimezMap = new THREE.CanvasTexture(ajimezCanvas);
+
+
+      // ------------------------------------------------------------------------
+      // 5. MADERA DE CEDRO TALLADA (ALEROS Y CANECILLOS DE COMARES) - 128x128
+      // ------------------------------------------------------------------------
+      // Madera oscura andalusí de cedro del Atlas con vetas longitudinales y modillones de canecillo.
+      const woodCanvas = document.createElement('canvas');
+      woodCanvas.width = 128;
+      woodCanvas.height = 128;
+      const wdCtx = woodCanvas.getContext('2d');
+
+      // Base: Cedro oscuro andalusí
+      wdCtx.fillStyle = '#381c0f';
+      wdCtx.fillRect(0, 0, 128, 128);
+
+      // Vetas longitudinales de la madera
+      for (let y = 0; y < 128; y += 2) {
+        const vAlpha = 0.08 + Math.sin(y * 0.15) * 0.06;
+        wdCtx.fillStyle = (y % 4 === 0) ? `rgba(77, 39, 22, ${vAlpha})` : `rgba(28, 12, 6, ${vAlpha})`;
+        wdCtx.fillRect(0, y, 128, 2);
+      }
+
+      // Canecillos / Modillones tallados en voladizo (4 modillones espaciados cada 32px)
+      for (let m = 0; m < 4; m++) {
+        const mx = m * 32 + 8;
+
+        // Cassetón rehundido entre canecillos (artesonado en sombra)
+        wdCtx.fillStyle = '#220d06';
+        wdCtx.fillRect(m * 32, 20, 8, 108);
+
+        // Cuerpo del canecillo / modillón de lóbulos
+        const grad = wdCtx.createLinearGradient(mx, 0, mx + 16, 0);
+        grad.addColorStop(0.0, '#5a2e19');
+        grad.addColorStop(0.3, '#743d22');
+        grad.addColorStop(0.8, '#4a2312');
+        grad.addColorStop(1.0, '#260f06');
+        wdCtx.fillStyle = grad;
+        wdCtx.fillRect(mx, 12, 16, 116);
+
+        // Molduras escalonadas (lóbulos y nacelas nazaríes)
+        wdCtx.fillStyle = '#1c0a04';
+        wdCtx.fillRect(mx, 36, 16, 3);
+        wdCtx.fillRect(mx, 64, 16, 4);
+        wdCtx.fillRect(mx, 92, 16, 3);
+
+        wdCtx.fillStyle = '#8a4c2a';
+        wdCtx.fillRect(mx, 39, 16, 1.5);
+        wdCtx.fillRect(mx, 68, 16, 1.5);
+        wdCtx.fillRect(mx, 95, 16, 1.5);
+
+        // Roseta tallada central en el modillón
+        wdCtx.beginPath();
+        wdCtx.arc(mx + 8, 80, 3.5, 0, Math.PI * 2);
+        wdCtx.fillStyle = '#9e5932';
+        wdCtx.fill();
+        wdCtx.lineWidth = 1;
+        wdCtx.strokeStyle = '#260e06';
+        wdCtx.stroke();
+      }
+
+      // Viga corrida superior (platabanda del alero)
+      wdCtx.fillStyle = '#4d2716';
+      wdCtx.fillRect(0, 0, 128, 12);
+      wdCtx.fillStyle = '#7a4224';
+      wdCtx.fillRect(0, 10, 128, 2);
+      wdCtx.fillStyle = '#1c0a04';
+      wdCtx.fillRect(0, 12, 128, 2);
+
+      // Micrograno de madera
+      const wdImg = wdCtx.getImageData(0, 0, 128, 128);
+      for (let i = 0; i < wdImg.data.length; i += 4) {
+        const n = (Math.random() - 0.5) * 16;
+        wdImg.data[i]     = Math.max(0, Math.min(255, wdImg.data[i] + n));
+        wdImg.data[i + 1] = Math.max(0, Math.min(255, wdImg.data[i + 1] + n * 0.6));
+        wdImg.data[i + 2] = Math.max(0, Math.min(255, wdImg.data[i + 2] + n * 0.4));
+      }
+      wdCtx.putImageData(wdImg, 0, 0);
+
+      textures.woodMap = new THREE.CanvasTexture(woodCanvas);
+      textures.woodMap.wrapS = THREE.RepeatWrapping;
+      textures.woodMap.wrapT = THREE.RepeatWrapping;
+
+
+      // ------------------------------------------------------------------------
+      // 6. HALO SOLAR Y PARTÍCULAS CREPUSCULARES (ATMÓSFERA DE LA SABIKA)
+      // ------------------------------------------------------------------------
       const sunCanvas = document.createElement('canvas');
       sunCanvas.width = 256;
       sunCanvas.height = 256;
@@ -1309,7 +1830,6 @@
       sCtx.fillRect(0, 0, 256, 256);
       textures.sunHaloMap = new THREE.CanvasTexture(sunCanvas);
 
-      // 4. Crepuscular Dust / Ember Particle Texture
       const dotCanvas = document.createElement('canvas');
       dotCanvas.width = 64;
       dotCanvas.height = 64;
@@ -1322,6 +1842,47 @@
       dCtx.fillStyle = dGrad;
       dCtx.fillRect(0, 0, 64, 64);
       textures.emberMap = new THREE.CanvasTexture(dotCanvas);
+
+      // Cal y yesería blanca (Generalife y pórtico del Partal)
+      const plasterCanvas = document.createElement('canvas');
+      plasterCanvas.width = 128;
+      plasterCanvas.height = 128;
+      const pCtx = plasterCanvas.getContext('2d');
+      pCtx.fillStyle = '#f0e6dc';
+      pCtx.fillRect(0, 0, 128, 128);
+      for (let i = 0; i < 400; i++) {
+        pCtx.fillStyle = (Math.random() > 0.5) ? 'rgba(255,255,255,0.25)' : 'rgba(180,160,140,0.18)';
+        pCtx.fillRect(Math.random() * 128, Math.random() * 128, 3, 3);
+      }
+      textures.whitePlasterMap = new THREE.CanvasTexture(plasterCanvas);
+
+      // Alberca del Partal (Agua con reflejo crepuscular y ondas sutiles)
+      const waterCanvas = document.createElement('canvas');
+      waterCanvas.width = 128;
+      waterCanvas.height = 128;
+      const wtCtx = waterCanvas.getContext('2d');
+      const wtGrad = wtCtx.createLinearGradient(0, 0, 128, 128);
+      wtGrad.addColorStop(0, '#0f3832');
+      wtGrad.addColorStop(0.4, '#175249');
+      wtGrad.addColorStop(0.7, '#246b5a');
+      wtGrad.addColorStop(1, '#ffaa44'); // Reflejo dorado del sol poniente
+      wtCtx.fillStyle = wtGrad;
+      wtCtx.fillRect(0, 0, 128, 128);
+      wtCtx.strokeStyle = 'rgba(255, 230, 180, 0.25)';
+      wtCtx.lineWidth = 1.5;
+      for (let i = 0; i < 6; i++) {
+        wtCtx.beginPath();
+        wtCtx.moveTo(0, i * 22);
+        wtCtx.bezierCurveTo(40, i * 22 + 10, 80, i * 22 - 10, 128, i * 22 + 5);
+        wtCtx.stroke();
+      }
+      textures.waterMap = new THREE.CanvasTexture(waterCanvas);
+      textures.waterMap.wrapS = THREE.RepeatWrapping;
+      textures.waterMap.wrapT = THREE.RepeatWrapping;
+
+      // Compatibilidad con referencias previas
+      textures.wallMap = textures.tapialMap;
+      textures.wallNormal = textures.tapialNormal;
 
       return textures;
     }
@@ -1341,12 +1902,13 @@
       this.stage0Flag = null;
       this.stage0Sun = null;
       this.stage0SunHalo = null;
+      this.stage0Water = null;
       this.stage0Lights = [];
 
       this.stage0Textures = this.buildStage0AlhambraTextures();
 
       // ======================================================================
-      // A. CIELO Y GRAN SOL PONIENTE
+      // A. CIELO Y GRAN SOL PONIENTE EN EL OESTE (FLANCO DERECHO)
       // ======================================================================
 
       // 1. Sky Gradient Backdrop (Granadino Twilight)
@@ -1394,8 +1956,8 @@
       skyMesh.position.set(0, 14, -62);
       this.stage0Group.add(skyMesh);
 
-      // 2. Gran Sol Crepuscular (Setting Sun)
-      const sunPos = new THREE.Vector3(9.5, 6.2, -54);
+      // 2. Gran Sol Poniente en el OESTE (Flanco Derecho superior)
+      const sunPos = new THREE.Vector3(16.5, 8.5, -54);
       const sunGeo = new THREE.SphereGeometry(6.6, 32, 24);
       const sunMat = new THREE.MeshBasicMaterial({ color: 0xffd166 });
       const sunMesh = new THREE.Mesh(sunGeo, sunMat);
@@ -1403,8 +1965,8 @@
       this.stage0Group.add(sunMesh);
       this.stage0Sun = sunMesh;
 
-      // 3. Corona / Halo Semitransparente Naranja
-      const haloGeo = new THREE.PlaneGeometry(50, 50);
+      // 3. Corona / Halo Semitransparente Ámbar / Carmesí
+      const haloGeo = new THREE.PlaneGeometry(52, 52);
       const haloMat = new THREE.MeshBasicMaterial({
         map: this.stage0Textures.sunHaloMap,
         transparent: true,
@@ -1418,13 +1980,13 @@
       this.stage0Group.add(haloMesh);
       this.stage0SunHalo = haloMesh;
 
-      // 4. Rayos Crepusculares (God-Rays) emanando del sol
-      const rayAngles = [-130, -112, -95, -78, -60, -42, -25, -10, 195, 215];
+      // 4. Rayos Crepusculares (God-Rays) emanando del sol hacia el oeste y sur
+      const rayAngles = [-150, -135, -120, -105, -92, -78, -65, -165, -178, 170];
       rayAngles.forEach((angDeg, idx) => {
         const ang = THREE.MathUtils.degToRad(angDeg);
-        const len = 70 + (idx % 3) * 15;
+        const len = 75 + (idx % 3) * 15;
         const widthTop = 1.4;
-        const widthBottom = 15 + (idx % 4) * 4;
+        const widthBottom = 16 + (idx % 4) * 4;
 
         const rayGeo = new THREE.BufferGeometry();
         const vertices = new Float32Array([
@@ -1487,32 +2049,36 @@
         });
       });
 
-      // 5. Cumbres de Sierra Nevada (Siluetas en tonos púrpuras y cimas doradas/blancas)
-      // Capa 1: Cumbres lejanas (Veleta y Mulhacén) en Z = -48
+      // ======================================================================
+      // B. CUMBRES DE SIERRA NEVADA (ALPENGLOW DORADO Y ROSÁCEO)
+      // ======================================================================
+
+      // Capa 1: Cumbres lejanas (Veleta y Mulhacén elevándose tras la colina) en Z = -48
       const snFarVertices = [];
       const snFarColors = [];
       const snFarIndices = [];
+      // Perfil exacto mirando al Sur: Mulhacén en X ≈ -17.5, Veleta en X ≈ -6.5
       const snFarPoints = [
-        [-75, -6], [-60, 4], [-48, 8], [-38, 12.5], [-28, 9],
-        [-18, 15.5], // Pico Veleta
-        [-9, 10], [-2, 12],
-        [6, 16.8],   // Mulhacén
-        [15, 11], [24, 13.5], [36, 9], [48, 11], [62, 5], [75, -6]
+        [-75, -6], [-62, 5], [-50, 9], [-38, 12], [-28, 14.5],
+        [-17.5, 18.2], // Pico Mulhacén (la mayor altitud de la península)
+        [-11.5, 13.5],
+        [-6.5, 16.8],  // Pico Veleta (su icónica silueta piramidal)
+        [2, 11.5], [10, 13.2], [22, 10.0], [34, 12.0], [48, 8.5], [62, 4.0], [75, -6]
       ];
 
       for (let i = 0; i < snFarPoints.length; i++) {
         const pt = snFarPoints[i];
         snFarVertices.push(pt[0], pt[1], 0);
-        if (pt[1] > 11.0) {
-          snFarColors.push(0.98, 0.88, 0.76); // Nieve dorada al atardecer
-        } else if (pt[1] > 7.0) {
-          snFarColors.push(0.72, 0.38, 0.52); // Alpenglow rosado
+        if (pt[1] > 14.0) {
+          snFarColors.push(0.98, 0.90, 0.82); // Nieve dorada al atardecer
+        } else if (pt[1] > 8.0) {
+          snFarColors.push(0.74, 0.38, 0.52); // Alpenglow rosado
         } else {
-          snFarColors.push(0.38, 0.14, 0.32); // Púrpura oscuro
+          snFarColors.push(0.36, 0.14, 0.30); // Púrpura de umbría
         }
 
         snFarVertices.push(pt[0], -18, 0);
-        snFarColors.push(0.17, 0.06, 0.16); // Base violeta oscuro
+        snFarColors.push(0.16, 0.06, 0.15); // Base violeta oscuro
       }
 
       for (let i = 0; i < snFarPoints.length - 1; i++) {
@@ -1538,18 +2104,18 @@
       snFarMesh.position.set(0, 0, -48);
       this.stage0Group.add(snFarMesh);
 
-      // Capa 2: Cresta intermedia (Z = -44) en púrpura crepuscular
+      // Capa 2: Cresta intermedia en Z = -44
       const snMidVertices = [];
       const snMidColors = [];
       const snMidIndices = [];
       const snMidPoints = [
-        [-70, -6], [-52, 2], [-40, 6.5], [-26, 4.5], [-12, 8.2],
-        [0, 5.0], [14, 7.8], [28, 4.2], [42, 6.8], [58, 2.5], [70, -6]
+        [-70, -6], [-54, 3], [-42, 7.5], [-26, 8.5], [-14, 9.8],
+        [-2, 7.2], [12, 8.5], [26, 6.2], [44, 7.4], [58, 2.5], [70, -6]
       ];
       for (let i = 0; i < snMidPoints.length; i++) {
         const pt = snMidPoints[i];
         snMidVertices.push(pt[0], pt[1], 0);
-        snMidColors.push(0.42, 0.15, 0.28);
+        snMidColors.push(0.44, 0.16, 0.29);
         snMidVertices.push(pt[0], -18, 0);
         snMidColors.push(0.18, 0.07, 0.16);
       }
@@ -1570,24 +2136,24 @@
       this.stage0Group.add(snMidMesh);
 
       // ======================================================================
-      // B. MONUMENTO DE LA ALHAMBRA (Sobre la colina de la Sabika)
+      // C. COLINA DE LA SABIKA (LADERA ROCOSA BERMEJA Y BOSQUE DE CIPRESES)
       // ======================================================================
 
-      // 1. Colina Rocosa de la Sabika
       const hillGeo = new THREE.BufferGeometry();
       const hillVertices = [];
       const hillColors = [];
       const hillIndices = [];
+      // Perfil de la Sabika: descendiendo hacia el Darro y subiendo a la Alcazaba y Generalife
       const hillProfile = [
-        [-38, -14], [-32, -8], [-24, -4.5], [-16, -2.5], [-8, -1.8],
-        [0, -2.2], [8, -1.5], [16, -2.8], [24, -4.0], [32, -8.5], [38, -14]
+        [-36, -14], [-28, -7.5], [-20, -3.8], [-12, -2.6], [-4, -2.1],
+        [4, -2.4], [12, -1.8], [18, -2.2], [26, -5.5], [34, -9.5], [40, -15]
       ];
       for (let i = 0; i < hillProfile.length; i++) {
         const p = hillProfile[i];
         hillVertices.push(p[0], p[1], (Math.random() - 0.5) * 1.5);
-        hillColors.push(0.36, 0.20, 0.13); // Tierra arcillosa
+        hillColors.push(0.38, 0.19, 0.12); // Tierra arcillosa bermeja
         hillVertices.push(p[0], -20, 3.0);
-        hillColors.push(0.20, 0.10, 0.07); // Sombra de la colina
+        hillColors.push(0.19, 0.09, 0.06); // Sombra del cañón del Darro
       }
       for (let i = 0; i < hillProfile.length - 1; i++) {
         const t1 = i * 2;
@@ -1604,44 +2170,48 @@
 
       const hillMat = new THREE.MeshStandardMaterial({
         vertexColors: true,
-        roughness: 0.9,
-        metalness: 0.05
+        roughness: 0.92,
+        metalness: 0.04
       });
       const hillMesh = new THREE.Mesh(hillGeo, hillMat);
       hillMesh.position.set(0, 0, -29);
       this.stage0Group.add(hillMesh);
 
-      // 2. Cipreses Andaluces y Pinos Mediterráneos
-      const cypressGroup = new THREE.Group();
-      const coneGeo = new THREE.ConeGeometry(0.55, 4.4, 7);
+      // Bosque de la Sabika: Cipreses Andaluces (Cupressus sempervirens) y Pinos
+      const forestGroup = new THREE.Group();
+      const cypressConeGeo = new THREE.ConeGeometry(0.52, 4.4, 7);
       const pineGeo = new THREE.SphereGeometry(1.2, 8, 6);
       const trunkGeo = new THREE.CylinderGeometry(0.10, 0.14, 1.4, 5);
 
       const foliageMatDark = new THREE.MeshStandardMaterial({
-        color: 0x142817,
-        roughness: 0.85,
+        color: 0x122615,
+        roughness: 0.88,
         metalness: 0.05
       });
       const foliageMatMid = new THREE.MeshStandardMaterial({
-        color: 0x19361e,
-        roughness: 0.85,
+        color: 0x18341b,
+        roughness: 0.88,
         metalness: 0.05
       });
       const trunkMat = new THREE.MeshStandardMaterial({
         color: 0x24160e,
-        roughness: 0.9
+        roughness: 0.92
       });
 
       const cypressPositions = [
-        [-15.5, -3.2, -26.5, 1.1], [-14.2, -4.5, -26.0, 0.95], [-13.0, -2.8, -25.2, 1.25],
-        [-12.1, -4.0, -24.8, 1.05], [-11.2, -5.2, -25.5, 0.9], [-10.5, -3.0, -24.5, 1.3],
-        [-9.8, -4.8, -24.2, 1.15], [-8.9, -3.5, -24.0, 1.0], [-7.8, -4.2, -24.5, 1.2],
-        [-7.0, -5.6, -25.0, 0.85], [-6.2, -3.8, -24.8, 1.1], [-5.4, -4.6, -25.2, 0.95],
-        [-2.0, -4.5, -25.8, 1.15], [0.5, -4.8, -26.0, 1.0], [2.2, -4.2, -25.5, 1.2],
-        [3.8, -4.9, -25.2, 0.9], [5.0, -4.1, -25.0, 1.1],
-        [13.5, -3.5, -25.2, 1.2], [14.8, -4.8, -25.5, 1.0], [16.0, -3.2, -25.8, 1.3],
-        [17.2, -5.0, -26.0, 0.9], [18.5, -3.8, -26.2, 1.15], [19.8, -4.5, -26.5, 1.05],
-        [21.0, -5.5, -26.8, 0.95], [22.5, -4.2, -27.0, 1.25]
+        // Jardines del Generalife y laderas este (Izquierda)
+        [-22.5, 0.5, -30.0, 1.2], [-21.2, -1.0, -29.5, 1.05], [-19.8, 1.5, -30.2, 1.3],
+        [-18.5, -0.5, -29.0, 1.15], [-17.2, -2.0, -28.5, 1.0], [-16.0, -3.2, -27.8, 1.25],
+        // Alberca del Partal (4 cipreses emblemáticos flanqueando la alberca)
+        [-12.2, -1.5, -24.8, 1.25], [-12.2, -1.5, -27.2, 1.25],
+        [-6.5, -1.5, -24.8, 1.25], [-6.5, -1.5, -27.2, 1.25],
+        // Laderas bajo Comares y Palacios Nazaríes (Centro)
+        [-4.8, -4.5, -25.2, 1.1], [-3.5, -5.2, -25.0, 0.95], [-0.8, -4.8, -25.4, 1.2],
+        [0.5, -5.5, -25.8, 1.0], [2.2, -4.6, -25.2, 1.15], [3.8, -5.0, -25.5, 0.9],
+        // Bosque de la Alcazaba y Jardín de los Adarves (Derecha)
+        [6.2, -4.2, -25.8, 1.2], [7.8, -5.2, -26.0, 1.0], [9.5, -3.8, -25.2, 1.3],
+        [11.0, -2.8, -24.5, 1.1], [12.5, -3.2, -24.8, 1.2], [14.0, -4.5, -25.5, 0.95],
+        [17.5, -4.8, -26.2, 1.15], [19.2, -6.0, -26.8, 1.0]
       ];
 
       cypressPositions.forEach((pos, idx) => {
@@ -1653,18 +2223,19 @@
         trunk.scale.set(sc, sc, sc);
         cTree.add(trunk);
 
-        const canopy = new THREE.Mesh(coneGeo, (idx % 2 === 0) ? foliageMatDark : foliageMatMid);
+        const canopy = new THREE.Mesh(cypressConeGeo, (idx % 2 === 0) ? foliageMatDark : foliageMatMid);
         canopy.position.y = (0.7 + 2.2) * sc;
         canopy.scale.set(sc, sc, sc);
         cTree.add(canopy);
 
         cTree.position.set(pos[0], pos[1], pos[2]);
-        cypressGroup.add(cTree);
+        forestGroup.add(cTree);
       });
 
       const pinePositions = [
-        [-17.0, -4.0, -27.0, 1.2], [-8.2, -6.0, -25.2, 1.0],
-        [6.5, -5.2, -26.0, 1.1], [15.5, -5.8, -26.5, 1.2], [23.5, -5.2, -27.5, 1.1]
+        [-20.5, -2.5, -29.2, 1.2], [-14.5, -4.8, -27.5, 1.1],
+        [-1.5, -6.2, -26.0, 1.2], [5.2, -5.8, -26.2, 1.15],
+        [13.2, -5.0, -26.0, 1.1], [18.2, -6.5, -27.2, 1.2]
       ];
       pinePositions.forEach(pos => {
         const pTree = new THREE.Group();
@@ -1681,18 +2252,17 @@
         pTree.add(pCanopy);
 
         pTree.position.set(pos[0], pos[1], pos[2]);
-        cypressGroup.add(pTree);
+        forestGroup.add(pTree);
       });
+      this.stage0Group.add(forestGroup);
 
-      this.stage0Group.add(cypressGroup);
-
-      // Shared stone & roof materials
+      // Materiales arquitectónicos compartidos
       const stoneMat = new THREE.MeshStandardMaterial({
-        map: this.stage0Textures.wallMap,
-        normalMap: this.stage0Textures.wallNormal,
+        map: this.stage0Textures.tapialMap,
+        normalMap: this.stage0Textures.tapialNormal,
         color: 0xba5a31,
-        roughness: 0.75,
-        metalness: 0.12
+        roughness: 0.78,
+        metalness: 0.10
       });
 
       const roofMat = new THREE.MeshStandardMaterial({
@@ -1704,218 +2274,438 @@
       });
 
       const woodMat = new THREE.MeshStandardMaterial({
-        color: 0x3d2012,
+        map: this.stage0Textures.woodMap,
+        color: 0x4a2818,
         roughness: 0.85
       });
 
-      // 3. Torre de la Vela (Prominente en la proa oeste, flanco izquierdo)
-      const velaGroup = new THREE.Group();
-      velaGroup.position.set(-9.2, -2.5, -25.5);
-
-      const velaBodyGeo = new THREE.BoxGeometry(5.2, 8.5, 5.2);
-      const velaBody = new THREE.Mesh(velaBodyGeo, stoneMat);
-      velaBody.position.y = 4.25;
-      velaGroup.add(velaBody);
-
-      // Almenas perimetrales (Crenellations) en la azotea
-      const merlonGeo = new THREE.BoxGeometry(0.85, 0.75, 0.45);
-      const merlonPositions = [
-        [-2.0, 8.85, 2.4], [-0.67, 8.85, 2.4], [0.67, 8.85, 2.4], [2.0, 8.85, 2.4],
-        [-2.0, 8.85, -2.4], [-0.67, 8.85, -2.4], [0.67, 8.85, -2.4], [2.0, 8.85, -2.4],
-        [-2.4, 8.85, -1.0], [-2.4, 8.85, 1.0],
-        [2.4, 8.85, -1.0], [2.4, 8.85, 1.0]
-      ];
-      merlonPositions.forEach(mp => {
-        const m = new THREE.Mesh(merlonGeo, stoneMat);
-        m.position.set(mp[0], mp[1], mp[2]);
-        if (Math.abs(mp[0]) > 2.2) m.rotation.y = Math.PI / 2;
-        velaGroup.add(m);
+      const plasterMat = new THREE.MeshStandardMaterial({
+        map: this.stage0Textures.whitePlasterMap,
+        color: 0xf5ece4,
+        roughness: 0.82
       });
 
-      // Campanario de la Vela con campana
-      const belfryGroup = new THREE.Group();
-      belfryGroup.position.set(-1.6, 8.5, 1.6);
-
-      const pillarGeo = new THREE.BoxGeometry(0.35, 2.0, 0.35);
-      const pLeft = new THREE.Mesh(pillarGeo, stoneMat);
-      pLeft.position.set(-0.65, 1.0, 0);
-      belfryGroup.add(pLeft);
-
-      const pRight = new THREE.Mesh(pillarGeo, stoneMat);
-      pRight.position.set(0.65, 1.0, 0);
-      belfryGroup.add(pRight);
-
-      const bRoofGeo = new THREE.ConeGeometry(1.1, 0.8, 4);
-      bRoofGeo.rotateY(Math.PI / 4);
-      const bRoof = new THREE.Mesh(bRoofGeo, roofMat);
-      bRoof.position.set(0, 2.35, 0);
-      belfryGroup.add(bRoof);
-
-      // Campana de la Vela (Bronce dorado)
-      const bellGeo = new THREE.CylinderGeometry(0.14, 0.38, 0.65, 12);
-      const bellMat = new THREE.MeshStandardMaterial({
-        color: 0xd4af37,
-        metalness: 0.9,
-        roughness: 0.25
+      const carlosVMat = new THREE.MeshStandardMaterial({
+        map: this.stage0Textures.carlosVMap,
+        normalMap: this.stage0Textures.carlosVNormal,
+        color: 0xbf955b,
+        roughness: 0.72,
+        metalness: 0.12
       });
-      const bellMesh = new THREE.Mesh(bellGeo, bellMat);
-      bellMesh.position.set(0, -0.32, 0);
 
-      const bellPivot = new THREE.Group();
-      bellPivot.position.set(0, 1.45, 0);
-      bellPivot.add(bellMesh);
-      belfryGroup.add(bellPivot);
-      this.stage0Bell = bellPivot;
-
-      velaGroup.add(belfryGroup);
-
-      // Asta de bandera y Bandera de la Vela
-      const poleGeo = new THREE.CylinderGeometry(0.06, 0.08, 4.2, 8);
-      const poleMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8, roughness: 0.3 });
-      const pole = new THREE.Mesh(poleGeo, poleMat);
-      pole.position.set(1.4, 10.5, -1.2);
-      velaGroup.add(pole);
-
-      const flagGeo = new THREE.PlaneGeometry(1.8, 1.1, 10, 6);
-      const flagMat = new THREE.MeshBasicMaterial({
-        color: 0x008844, // Verde andaluz
-        side: THREE.DoubleSide
+      const ajimezMat = new THREE.MeshBasicMaterial({
+        map: this.stage0Textures.ajimezMap
       });
-      const flagMesh = new THREE.Mesh(flagGeo, flagMat);
-      flagMesh.position.set(1.4 + 0.9, 11.8, -1.2);
-      velaGroup.add(flagMesh);
-      this.stage0Flag = flagMesh;
 
-      this.stage0Group.add(velaGroup);
+      const merlonGeo = new THREE.BoxGeometry(0.75, 0.75, 0.45);
 
-      // 4. Muralla de la Alcazaba y Torre del Homenaje
+      // ======================================================================
+      // D. A LA IZQUIERDA (ESTE): EL PARTAL Y GENERALIFE
+      // ======================================================================
+
+      // 1. Generalife en el Cerro del Sol (Silueta lejana y escalonada)
+      const generalifeGroup = new THREE.Group();
+      generalifeGroup.position.set(-20.5, 2.8, -31.5);
+
+      // Pabellón Principal del Generalife (Paredes blancas de cal y arquería)
+      const genMainGeo = new THREE.BoxGeometry(6.5, 3.6, 4.0);
+      const genMain = new THREE.Mesh(genMainGeo, plasterMat);
+      genMain.position.y = 1.8;
+      generalifeGroup.add(genMain);
+
+      const genRoofGeo = new THREE.ConeGeometry(4.8, 1.6, 4);
+      genRoofGeo.rotateY(Math.PI / 4);
+      const genRoof = new THREE.Mesh(genRoofGeo, roofMat);
+      genRoof.position.set(0, 4.4, 0);
+      generalifeGroup.add(genRoof);
+
+      // Galería de arcos mirador del Generalife
+      const genArcGeo = new THREE.BoxGeometry(4.8, 1.2, 0.2);
+      const genArcMat = new THREE.MeshBasicMaterial({ color: 0x221008 });
+      const genArc = new THREE.Mesh(genArcGeo, genArcMat);
+      genArc.position.set(0, 2.4, 2.05);
+      generalifeGroup.add(genArc);
+
+      // Pabellón inferior escalonado
+      const genLowGeo = new THREE.BoxGeometry(4.5, 2.4, 3.5);
+      const genLow = new THREE.Mesh(genLowGeo, plasterMat);
+      genLow.position.set(4.0, -0.6, 1.0);
+      generalifeGroup.add(genLow);
+
+      const genLowRoof = new THREE.Mesh(new THREE.ConeGeometry(3.4, 1.2, 4), roofMat);
+      genLowRoof.rotation.y = Math.PI / 4;
+      genLowRoof.position.set(4.0, 1.2, 1.0);
+      generalifeGroup.add(genLowRoof);
+
+      this.stage0Group.add(generalifeGroup);
+
+      // 2. Muralla Oriental y Torre de los Picos
+      const eastWallGroup = new THREE.Group();
+      eastWallGroup.position.set(-14.2, -1.8, -27.2);
+
+      const picosBody = new THREE.Mesh(new THREE.BoxGeometry(3.6, 7.8, 3.6), stoneMat);
+      picosBody.position.set(0, 3.9, 0);
+      eastWallGroup.add(picosBody);
+
+      const picosRoof = new THREE.Mesh(new THREE.ConeGeometry(2.8, 1.4, 4), roofMat);
+      picosRoof.rotation.y = Math.PI / 4;
+      picosRoof.position.set(0, 8.5, 0);
+      eastWallGroup.add(picosRoof);
+
+      const eWall = new THREE.Mesh(new THREE.BoxGeometry(5.0, 5.5, 1.6), stoneMat);
+      eWall.position.set(-3.5, 2.75, -0.2);
+      eastWallGroup.add(eWall);
+
+      this.stage0Group.add(eastWallGroup);
+
+      // 3. El Partal, Torre de las Damas y Alberca Reflectante
+      const partalGroup = new THREE.Group();
+      partalGroup.position.set(-9.2, -2.5, -26.0);
+
+      // Torre de las Damas (Cuerpo de torre nazarí coronada en tejado piramidal)
+      const damasGeo = new THREE.BoxGeometry(3.6, 7.5, 3.6);
+      const damasBody = new THREE.Mesh(damasGeo, stoneMat);
+      damasBody.position.set(0, 3.75, -1.2);
+      partalGroup.add(damasBody);
+
+      const damasRoofGeo = new THREE.ConeGeometry(2.9, 1.6, 4);
+      damasRoofGeo.rotateY(Math.PI / 4);
+      const damasRoof = new THREE.Mesh(damasRoofGeo, roofMat);
+      damasRoof.position.set(0, 8.3, -1.2);
+      partalGroup.add(damasRoof);
+
+      // Ventana ajimez en la Torre de las Damas
+      const damasWinGeo = new THREE.PlaneGeometry(1.0, 1.8);
+      const damasWin = new THREE.Mesh(damasWinGeo, ajimezMat);
+      damasWin.position.set(0, 5.2, 0.62);
+      partalGroup.add(damasWin);
+
+      // Pórtico del Partal (Pabellón frontal con 5 arcos nazaríes y columnas)
+      const porticoRoof = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.35, 2.2), roofMat);
+      porticoRoof.position.set(0, 3.8, 1.1);
+      partalGroup.add(porticoRoof);
+
+      const porticoCeiling = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.2, 2.0), woodMat);
+      porticoCeiling.position.set(0, 3.55, 1.1);
+      partalGroup.add(porticoCeiling);
+
+      // Columnas del pórtico
+      const colGeo = new THREE.CylinderGeometry(0.08, 0.08, 2.6, 8);
+      const colMat = new THREE.MeshStandardMaterial({ color: 0xf0ece5, roughness: 0.6 });
+      [-2.3, -1.15, 0.0, 1.15, 2.3].forEach(cx => {
+        const col = new THREE.Mesh(colGeo, colMat);
+        col.position.set(cx, 2.2, 2.1);
+        partalGroup.add(col);
+      });
+
+      // Muro posterior enyesado del pórtico
+      const porticoBack = new THREE.Mesh(new THREE.BoxGeometry(5.0, 2.8, 0.2), plasterMat);
+      porticoBack.position.set(0, 2.3, 0.3);
+      partalGroup.add(porticoBack);
+
+      // Alberca Reflectante del Partal
+      const poolFrameGeo = new THREE.BoxGeometry(5.6, 0.4, 3.2);
+      const poolFrameMat = new THREE.MeshStandardMaterial({ color: 0x8a705a, roughness: 0.8 });
+      const poolFrame = new THREE.Mesh(poolFrameGeo, poolFrameMat);
+      poolFrame.position.set(0, 0.2, 4.2);
+      partalGroup.add(poolFrame);
+
+      const poolWaterGeo = new THREE.PlaneGeometry(5.2, 2.8);
+      const poolWaterMat = new THREE.MeshStandardMaterial({
+        map: this.stage0Textures.waterMap,
+        roughness: 0.15,
+        metalness: 0.85,
+        color: 0x2ddbb4
+      });
+      const poolWater = new THREE.Mesh(poolWaterGeo, poolWaterMat);
+      poolWater.rotation.x = -Math.PI / 2;
+      poolWater.position.set(0, 0.42, 4.2);
+      partalGroup.add(poolWater);
+      this.stage0Water = poolWater;
+
+      this.stage0Group.add(partalGroup);
+
+      // ======================================================================
+      // E. EN EL CENTRO: TORRE DE COMARES, PALACIOS NAZARÍES Y CARLOS V
+      // ======================================================================
+
+      // 1. Torre de Comares (La torre más monumental e icónica de los Palacios)
+      const comaresGroup = new THREE.Group();
+      comaresGroup.position.set(-2.2, -2.2, -25.5);
+
+      // Cubo masivo de Comares (16m de base, 45m de altura escalada)
+      const comaresBodyGeo = new THREE.BoxGeometry(5.6, 10.2, 5.6);
+      const comaresBody = new THREE.Mesh(comaresBodyGeo, stoneMat);
+      comaresBody.position.y = 5.1;
+      comaresGroup.add(comaresBody);
+
+      // Ajimeces (ventanas geminadas de arcos de herradura) en la fachada norte
+      const ajimezComares1 = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.2), ajimezMat);
+      ajimezComares1.position.set(-1.3, 6.2, 2.82);
+      comaresGroup.add(ajimezComares1);
+
+      const ajimezComares2 = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.2), ajimezMat);
+      ajimezComares2.position.set(1.3, 6.2, 2.82);
+      comaresGroup.add(ajimezComares2);
+
+      // Ventanas altas menores (celosías)
+      const upperWinGeo = new THREE.PlaneGeometry(0.7, 0.9);
+      const uWin1 = new THREE.Mesh(upperWinGeo, ajimezMat);
+      uWin1.position.set(-1.3, 8.4, 2.82);
+      comaresGroup.add(uWin1);
+      const uWin2 = new THREE.Mesh(upperWinGeo, ajimezMat);
+      uWin2.position.set(1.3, 8.4, 2.82);
+      comaresGroup.add(uWin2);
+
+      // El Gran Tejaroz Nazarí de madera de cedro sobresaliendo con canecillos
+      const tejarozGeo = new THREE.BoxGeometry(6.6, 0.4, 6.6);
+      const tejaroz = new THREE.Mesh(tejarozGeo, woodMat);
+      tejaroz.position.set(0, 10.3, 0);
+      comaresGroup.add(tejaroz);
+
+      // Canecillos (corbels) esculpidos bajo el alero
+      const canecilloGeo = new THREE.BoxGeometry(0.2, 0.35, 0.45);
+      for (let cx = -2.6; cx <= 2.6; cx += 0.65) {
+        const caneFront = new THREE.Mesh(canecilloGeo, woodMat);
+        caneFront.position.set(cx, 10.0, 2.95);
+        comaresGroup.add(caneFront);
+      }
+
+      // Tejado a cuatro aguas de teja árabe
+      const comaresRoofGeo = new THREE.ConeGeometry(4.6, 2.2, 4);
+      comaresRoofGeo.rotateY(Math.PI / 4);
+      const comaresRoof = new THREE.Mesh(comaresRoofGeo, roofMat);
+      comaresRoof.position.set(0, 11.4, 0);
+      comaresGroup.add(comaresRoof);
+
+      this.stage0Group.add(comaresGroup);
+
+      // 2. Tejados a cuatro aguas y salas de los Palacios Nazaríes (Arrayanes y Leones)
+      const nasridPalaces = new THREE.Group();
+      nasridPalaces.position.set(-4.5, -2.4, -26.8);
+
+      // Sala de la Barca y antesala
+      const barcaBody = new THREE.Mesh(new THREE.BoxGeometry(4.4, 5.2, 3.8), stoneMat);
+      barcaBody.position.set(0, 2.6, 0);
+      nasridPalaces.add(barcaBody);
+
+      const barcaRoof = new THREE.Mesh(new THREE.ConeGeometry(3.5, 1.6, 4), roofMat);
+      barcaRoof.rotation.y = Math.PI / 4;
+      barcaRoof.position.set(0, 6.0, 0);
+      nasridPalaces.add(barcaRoof);
+
+      // Ala lateral del Patio de los Arrayanes
+      const arrayanesWing = new THREE.Mesh(new THREE.BoxGeometry(3.8, 4.2, 5.5), stoneMat);
+      arrayanesWing.position.set(3.2, 2.1, -1.8);
+      nasridPalaces.add(arrayanesWing);
+
+      const arrayanesRoof = new THREE.Mesh(new THREE.ConeGeometry(3.4, 1.5, 4), roofMat);
+      arrayanesRoof.rotation.y = Math.PI / 4;
+      arrayanesRoof.position.set(3.2, 5.0, -1.8);
+      nasridPalaces.add(arrayanesRoof);
+
+      this.stage0Group.add(nasridPalaces);
+
+      // 3. Palacio de Carlos V (Mole renacentista elevándose detrás de los Palacios)
+      const carlosVGroup = new THREE.Group();
+      carlosVGroup.position.set(1.5, -1.6, -28.2);
+
+      // Doble cuerpo renacentista (9.8m de ancho x 8.4m de profundidad x 8.0m de alto)
+      const cBlockGeo = new THREE.BoxGeometry(9.8, 7.8, 8.4);
+      const cBlock = new THREE.Mesh(cBlockGeo, carlosVMat);
+      cBlock.position.y = 3.9;
+      carlosVGroup.add(cBlock);
+
+      // Cornisa corrida intermedia
+      const cCorniceGeo = new THREE.BoxGeometry(10.2, 0.45, 8.8);
+      const cCornice = new THREE.Mesh(cCorniceGeo, carlosVMat);
+      cCornice.position.y = 4.2;
+      carlosVGroup.add(cCornice);
+
+      // Balaustrada superior renacentista
+      const balustradeGeo = new THREE.BoxGeometry(10.0, 0.7, 8.6);
+      const balustrade = new THREE.Mesh(balustradeGeo, carlosVMat);
+      balustrade.position.y = 8.15;
+      carlosVGroup.add(balustrade);
+
+      this.stage0Group.add(carlosVGroup);
+
+      // 4. Campanario de Santa María de la Alhambra
+      const churchGroup = new THREE.Group();
+      churchGroup.position.set(4.2, -1.0, -30.0);
+
+      const churchTowerGeo = new THREE.BoxGeometry(2.0, 11.2, 2.0);
+      const churchTower = new THREE.Mesh(churchTowerGeo, stoneMat);
+      churchTower.position.y = 5.6;
+      churchGroup.add(churchTower);
+
+      // Campanario con huecos de medio punto
+      const belfryOpenGeo = new THREE.BoxGeometry(2.2, 1.8, 2.2);
+      const belfryOpenMat = new THREE.MeshBasicMaterial({ color: 0x1f0e08 });
+      const belfryOpen = new THREE.Mesh(belfryOpenGeo, belfryOpenMat);
+      belfryOpen.position.y = 9.8;
+      churchGroup.add(belfryOpen);
+
+      // Chapitel piramidal
+      const churchSpireGeo = new THREE.ConeGeometry(1.6, 2.4, 4);
+      churchSpireGeo.rotateY(Math.PI / 4);
+      const churchSpire = new THREE.Mesh(churchSpireGeo, roofMat);
+      churchSpire.position.y = 12.4;
+      churchGroup.add(churchSpire);
+
+      this.stage0Group.add(churchGroup);
+
+      // ======================================================================
+      // F. A LA DERECHA (OESTE): RECINTO MILITAR DE LA ALCAZABA
+      // ======================================================================
+
+      // 1. Torre del Homenaje (La más alta del interior de la Alcazaba)
       const homenajeGroup = new THREE.Group();
-      homenajeGroup.position.set(-16.2, -1.5, -27.5);
-      const homBody = new THREE.Mesh(new THREE.BoxGeometry(4.8, 10.5, 4.8), stoneMat);
+      homenajeGroup.position.set(8.2, -1.4, -27.2);
+
+      const homBody = new THREE.Mesh(new THREE.BoxGeometry(4.6, 10.5, 4.6), stoneMat);
       homBody.position.y = 5.25;
       homenajeGroup.add(homBody);
 
+      // Almenas escalonadas perimetrales
       for (let i = -1.8; i <= 1.8; i += 1.2) {
         const m1 = new THREE.Mesh(merlonGeo, stoneMat);
-        m1.position.set(i, 10.85, 2.2);
+        m1.position.set(i, 10.85, 2.1);
         homenajeGroup.add(m1);
         const m2 = new THREE.Mesh(merlonGeo, stoneMat);
-        m2.position.set(i, 10.85, -2.2);
+        m2.position.set(i, 10.85, -2.1);
         homenajeGroup.add(m2);
       }
       this.stage0Group.add(homenajeGroup);
 
-      // Torre de las Armas
+      // 2. Torre de las Armas (Bajando hacia el río Darro)
       const armasGroup = new THREE.Group();
-      armasGroup.position.set(-3.8, -4.2, -27.8);
-      const armasBody = new THREE.Mesh(new THREE.BoxGeometry(4.0, 6.8, 4.0), stoneMat);
-      armasBody.position.y = 3.4;
+      armasGroup.position.set(7.0, -3.8, -24.2);
+
+      const armasBody = new THREE.Mesh(new THREE.BoxGeometry(3.8, 6.6, 3.8), stoneMat);
+      armasBody.position.y = 3.3;
       armasGroup.add(armasBody);
+
+      // Almenas
+      [-1.4, 0, 1.4].forEach(ax => {
+        const m = new THREE.Mesh(merlonGeo, stoneMat);
+        m.position.set(ax, 6.9, 1.7);
+        armasGroup.add(m);
+      });
       this.stage0Group.add(armasGroup);
 
-      // Murallas almenadas conectando las torres
-      const wall1Geo = new THREE.BoxGeometry(6.5, 6.2, 1.8);
-      const wall1 = new THREE.Mesh(wall1Geo, stoneMat);
-      wall1.position.set(-12.8, 1.6, -26.5);
-      wall1.rotation.y = 0.18;
-      this.stage0Group.add(wall1);
+      // 3. Lienzos de Muralla y Adarves de la Alcazaba
+      const wallAlcazaba1 = new THREE.Mesh(new THREE.BoxGeometry(5.2, 6.4, 1.8), stoneMat);
+      wallAlcazaba1.position.set(11.8, 1.5, -26.2);
+      wallAlcazaba1.rotation.y = 0.12;
+      this.stage0Group.add(wallAlcazaba1);
 
-      const wall2Geo = new THREE.BoxGeometry(5.0, 5.0, 1.8);
-      const wall2 = new THREE.Mesh(wall2Geo, stoneMat);
-      wall2.position.set(-6.5, -0.6, -26.6);
-      wall2.rotation.y = -0.15;
-      this.stage0Group.add(wall2);
+      const wallAlcazaba2 = new THREE.Mesh(new THREE.BoxGeometry(4.8, 5.2, 1.8), stoneMat);
+      wallAlcazaba2.position.set(5.5, 0.4, -26.5);
+      wallAlcazaba2.rotation.y = -0.15;
+      this.stage0Group.add(wallAlcazaba2);
 
-      // Aspilleras / Arrow slits en las murallas
+      // Aspilleras en los lienzos defensivos
       const slitMat = new THREE.MeshBasicMaterial({ color: 0x140502 });
       const slitGeo = new THREE.BoxGeometry(0.18, 0.9, 0.2);
       [
-        [-12.2, 2.8, -25.5], [-13.4, 2.8, -25.5], [-6.2, 0.4, -25.6],
-        [-9.2, 2.5, -22.8], [-9.2, 4.5, -22.8], [-16.2, 4.2, -25.0]
+        [10.8, 2.6, -25.2], [12.4, 2.6, -25.2], [5.6, 1.4, -25.5],
+        [8.2, 4.0, -24.8], [8.2, 6.5, -24.8]
       ].forEach(sp => {
         const slit = new THREE.Mesh(slitGeo, slitMat);
         slit.position.set(sp[0], sp[1], sp[2]);
         this.stage0Group.add(slit);
       });
 
-      // 5. Palacio de Carlos V y Techos Árabes (Nasrid Architecture)
-      const carlosGroup = new THREE.Group();
-      carlosGroup.position.set(8.5, -1.8, -26.0);
+      // 4. TORRE DE LA VELA (Presidiendo el espolón occidental en el extremo derecho)
+      const velaGroup = new THREE.Group();
+      velaGroup.position.set(15.5, -2.2, -25.2);
 
-      const cLowGeo = new THREE.BoxGeometry(9.8, 3.8, 8.2);
-      const cLowMat = new THREE.MeshStandardMaterial({
-        map: this.stage0Textures.wallMap,
-        normalMap: this.stage0Textures.wallNormal,
-        color: 0x9e472a,
-        roughness: 0.8
-      });
-      const cLow = new THREE.Mesh(cLowGeo, cLowMat);
-      cLow.position.y = 1.9;
-      carlosGroup.add(cLow);
+      // Gran torre cuadrada masiva (16x16m a escala)
+      const velaBodyGeo = new THREE.BoxGeometry(5.8, 8.8, 5.8);
+      const velaBody = new THREE.Mesh(velaBodyGeo, stoneMat);
+      velaBody.position.y = 4.4;
+      velaGroup.add(velaBody);
 
-      const corniceGeo = new THREE.BoxGeometry(10.2, 0.35, 8.6);
-      const cornice = new THREE.Mesh(corniceGeo, stoneMat);
-      cornice.position.y = 3.9;
-      carlosGroup.add(cornice);
-
-      const cHighGeo = new THREE.BoxGeometry(9.6, 3.4, 8.0);
-      const cHigh = new THREE.Mesh(cHighGeo, stoneMat);
-      cHigh.position.y = 5.7;
-      carlosGroup.add(cHigh);
-
-      const balustradeGeo = new THREE.BoxGeometry(9.8, 0.5, 8.2);
-      const balustrade = new THREE.Mesh(balustradeGeo, stoneMat);
-      balustrade.position.y = 7.6;
-      carlosGroup.add(balustrade);
-
-      this.stage0Group.add(carlosGroup);
-
-      // Techos Árabes de terracota (Palacios Nazaríes, Comares y Partal)
-      const nasridGroup = new THREE.Group();
-      nasridGroup.position.set(2.8, -2.5, -26.8);
-
-      const pav1Body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 4.5, 4.2), stoneMat);
-      pav1Body.position.set(0, 2.25, 0);
-      nasridGroup.add(pav1Body);
-
-      const roof1Geo = new THREE.ConeGeometry(3.4, 1.8, 4);
-      roof1Geo.rotateY(Math.PI / 4);
-      const roof1 = new THREE.Mesh(roof1Geo, roofMat);
-      roof1.position.set(0, 5.2, 0);
-      nasridGroup.add(roof1);
-
-      const eave1 = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.2, 4.6), woodMat);
-      eave1.position.set(0, 4.4, 0);
-      nasridGroup.add(eave1);
-
-      const comaresBody = new THREE.Mesh(new THREE.BoxGeometry(4.8, 6.8, 4.8), stoneMat);
-      comaresBody.position.set(14.8, 2.5, -1.0);
-      nasridGroup.add(comaresBody);
-
-      const roof2Geo = new THREE.ConeGeometry(3.8, 1.6, 4);
-      roof2Geo.rotateY(Math.PI / 4);
-      const roof2 = new THREE.Mesh(roof2Geo, roofMat);
-      roof2.position.set(14.8, 6.7, -1.0);
-      nasridGroup.add(roof2);
-
-      const windowMat = new THREE.MeshBasicMaterial({ color: 0xffaa44 });
-      const winGeo = new THREE.PlaneGeometry(0.65, 1.1);
-      [
-        [0, 2.8, 2.15], [-1.0, 2.8, 2.15], [1.0, 2.8, 2.15],
-        [14.8, 3.5, 1.45], [14.0, 3.5, 1.45], [15.6, 3.5, 1.45]
-      ].forEach(wp => {
-        const win = new THREE.Mesh(winGeo, windowMat);
-        win.position.set(wp[0], wp[1], wp[2]);
-        nasridGroup.add(win);
+      // Almenas perimetrales en el amplio adarve
+      const velaMerlonPositions = [
+        [-2.4, 9.15, 2.7], [-1.2, 9.15, 2.7], [0.0, 9.15, 2.7], [1.2, 9.15, 2.7], [2.4, 9.15, 2.7],
+        [-2.4, 9.15, -2.7], [-1.2, 9.15, -2.7], [0.0, 9.15, -2.7], [1.2, 9.15, -2.7], [2.4, 9.15, -2.7],
+        [-2.7, 9.15, -1.2], [-2.7, 9.15, 1.2],
+        [2.7, 9.15, -1.2], [2.7, 9.15, 1.2]
+      ];
+      velaMerlonPositions.forEach(mp => {
+        const m = new THREE.Mesh(merlonGeo, stoneMat);
+        m.position.set(mp[0], mp[1], mp[2]);
+        if (Math.abs(mp[0]) > 2.5) m.rotation.y = Math.PI / 2;
+        velaGroup.add(m);
       });
 
-      this.stage0Group.add(nasridGroup);
+      // Espadaña Renacentista en la esquina superior del adarve
+      const belfryGroup = new THREE.Group();
+      belfryGroup.position.set(-1.8, 8.8, 1.8);
 
-      // Puntos de luz cálida crepuscular en los muros
+      const pillarGeo = new THREE.BoxGeometry(0.38, 2.2, 0.38);
+      const pLeft = new THREE.Mesh(pillarGeo, stoneMat);
+      pLeft.position.set(-0.7, 1.1, 0);
+      belfryGroup.add(pLeft);
+
+      const pRight = new THREE.Mesh(pillarGeo, stoneMat);
+      pRight.position.set(0.7, 1.1, 0);
+      belfryGroup.add(pRight);
+
+      const bRoofGeo = new THREE.ConeGeometry(1.2, 0.9, 4);
+      bRoofGeo.rotateY(Math.PI / 4);
+      const bRoof = new THREE.Mesh(bRoofGeo, roofMat);
+      bRoof.position.set(0, 2.5, 0);
+      belfryGroup.add(bRoof);
+
+      // Campana de bronce de la Vela oscilando con el compás
+      const bellGeo = new THREE.CylinderGeometry(0.15, 0.42, 0.72, 12);
+      const bellMat = new THREE.MeshStandardMaterial({
+        color: 0xd4af37, // Bronce dorado
+        metalness: 0.92,
+        roughness: 0.22
+      });
+      const bellMesh = new THREE.Mesh(bellGeo, bellMat);
+      bellMesh.position.set(0, -0.36, 0);
+
+      const bellPivot = new THREE.Group();
+      bellPivot.position.set(0, 1.6, 0);
+      bellPivot.add(bellMesh);
+      belfryGroup.add(bellPivot);
+      this.stage0Bell = bellPivot;
+
+      velaGroup.add(belfryGroup);
+
+      // Mástil y Banderas ondeando
+      const poleGeo = new THREE.CylinderGeometry(0.06, 0.08, 4.4, 8);
+      const poleMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.85, roughness: 0.25 });
+      const pole = new THREE.Mesh(poleGeo, poleMat);
+      pole.position.set(1.5, 10.8, -1.2);
+      velaGroup.add(pole);
+
+      const flagGeo = new THREE.PlaneGeometry(2.0, 1.2, 10, 6);
+      const flagMat = new THREE.MeshBasicMaterial({
+        color: 0x008844, // Verde andaluz
+        side: THREE.DoubleSide
+      });
+      const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+      flagMesh.position.set(1.5 + 1.0, 12.2, -1.2);
+      velaGroup.add(flagMesh);
+      this.stage0Flag = flagMesh;
+
+      this.stage0Group.add(velaGroup);
+
+      // ======================================================================
+      // G. PUNTOS DE LUZ CÁLIDA CREPUSCULAR (ILUMINACIÓN MONUMENTAL)
+      // ======================================================================
+
       const warmLightConfigs = [
-        { color: 0xff8c00, intensity: 2.2, dist: 35, pos: new THREE.Vector3(-9.2, 2.0, -20.0), phase: 0.0 },
-        { color: 0xffaa44, intensity: 2.4, dist: 40, pos: new THREE.Vector3(8.5, 3.0, -20.0), phase: 1.8 },
-        { color: 0xff5522, intensity: 1.8, dist: 30, pos: new THREE.Vector3(0.0, -1.0, -21.0), phase: 3.5 }
+        { color: 0xffaa44, intensity: 2.6, dist: 40, pos: new THREE.Vector3(15.5, 3.5, -20.0), phase: 0.0 }, // Vela
+        { color: 0xff7722, intensity: 2.8, dist: 42, pos: new THREE.Vector3(-2.2, 4.0, -20.0), phase: 1.8 }, // Comares
+        { color: 0xffcc66, intensity: 2.2, dist: 35, pos: new THREE.Vector3(-9.2, 1.0, -21.0), phase: 3.2 }, // Partal
+        { color: 0xff8833, intensity: 2.4, dist: 38, pos: new THREE.Vector3(1.5, 3.2, -22.0), phase: 4.5 }   // Carlos V
       ];
       warmLightConfigs.forEach(cfg => {
         const pLight = new THREE.PointLight(cfg.color, cfg.intensity, cfg.dist, 1.6);
@@ -1930,7 +2720,7 @@
       });
 
       // ======================================================================
-      // C. ATMÓSFERA Y PULSO MUSICAL
+      // H. ATMÓSFERA Y PULSO MUSICAL
       // ======================================================================
 
       // 1. Pavesas Doradas / Motas de Polvo Crepusculares
@@ -2005,7 +2795,7 @@
       const wingGeo = new THREE.ShapeGeometry(wingShape);
 
       const swiftMat = new THREE.MeshBasicMaterial({
-        color: 0x1f0d1a, // Silueta oscura crepuscular
+        color: 0x1f0d1a, // Silueta crepuscular
         side: THREE.DoubleSide
       });
 
@@ -2073,7 +2863,7 @@
 
       // 3. Campana de la Vela oscilando con el compás
       if (this.stage0Bell) {
-        this.stage0Bell.rotation.z = Math.sin(elapsed * 2.4) * 0.22 + pulse * 0.15;
+        this.stage0Bell.rotation.z = Math.sin(elapsed * 2.4) * 0.22 + pulse * 0.18;
       }
 
       // 4. Bandera ondeando en la brisa de Sierra Nevada
@@ -2081,7 +2871,7 @@
         const flagPos = this.stage0Flag.geometry.attributes.position;
         for (let i = 0; i < flagPos.count; i++) {
           const u = flagPos.getX(i);
-          const amp = Math.max(0.0, (u + 0.9) / 1.8);
+          const amp = Math.max(0.0, (u + 1.0) / 2.0);
           const wave = Math.sin(elapsed * 6.5 - u * 3.5) * amp * 0.22 +
                        Math.cos(elapsed * 4.2 - u * 2.0) * amp * 0.10;
           flagPos.setZ(i, wave);
@@ -2089,14 +2879,19 @@
         flagPos.needsUpdate = true;
       }
 
-      // 5. Luces cálidas en los muros de la Alhambra
+      // 5. Alberca del Partal con suave ondulación crepuscular
+      if (this.stage0Water && this.stage0Water.material.map) {
+        this.stage0Water.material.map.offset.y = (elapsed * 0.04) % 1.0;
+      }
+
+      // 6. Luces cálidas en los muros de la Alhambra
       if (this.stage0Lights && this.stage0Lights.length) {
         this.stage0Lights.forEach(l => {
           l.light.intensity = l.baseIntensity + pulse * 1.8 + Math.sin(elapsed * 2.0 + l.phase) * 0.3;
         });
       }
 
-      // 6. Pavesas Doradas flotando suavemente (Thermal convection & BPM pulse)
+      // 7. Pavesas Doradas flotando suavemente (Thermal convection & BPM pulse)
       if (this.stage0Embers) {
         const { positions, data, geo, sizes } = this.stage0Embers;
         const count = data.length;
@@ -2120,7 +2915,7 @@
         geo.attributes.size.needsUpdate = true;
       }
 
-      // 7. Vuelo de Vencejos / Golondrinas cruzando el atardecer
+      // 8. Vuelo de Vencejos / Golondrinas cruzando el atardecer
       if (this.stage0Swifts && this.stage0Swifts.length) {
         this.stage0Swifts.forEach(swift => {
           const t = elapsed * swift.speed + swift.phase;

@@ -31,8 +31,9 @@
   const STAGES = [
     {
       id: 0,
-      name: 'Abismo Bioluminiscente',
-      bpm: 110,
+      name: 'Atardecer en la Alhambra',
+      sub: '105 BPM · Modo Frigio Andalusí',
+      bpm: 105,
       rootMidi: 50, // D3 (146.83 Hz)
       // D Dorian scale: D, E, F, G, A, B, C (intervals from D)
       scale: [0, 2, 3, 5, 7, 9, 10],
@@ -158,6 +159,7 @@
         "audio_tracks/Transcendental%20Cosmic%20Trance.mp3"
       ];
       this.externalTracks = [null, null, null];
+      this.externalTrackGains = [null, null, null];
       this.externalTrackReady = [false, false, false];
       this.activeExternalAudio = null;
     }
@@ -183,9 +185,9 @@
 
       // Master Dynamics Compressor (Limiter)
       this.masterLimiter = this.ctx.createDynamicsCompressor();
-      this.masterLimiter.threshold.setValueAtTime(-2.5, this.ctx.currentTime);
+      this.masterLimiter.threshold.setValueAtTime(-1.0, this.ctx.currentTime);
       this.masterLimiter.knee.setValueAtTime(8.0, this.ctx.currentTime);
-      this.masterLimiter.ratio.setValueAtTime(14.0, this.ctx.currentTime);
+      this.masterLimiter.ratio.setValueAtTime(6.0, this.ctx.currentTime);
       this.masterLimiter.attack.setValueAtTime(0.003, this.ctx.currentTime);
       this.masterLimiter.release.setValueAtTime(0.12, this.ctx.currentTime);
 
@@ -206,7 +208,7 @@
       this.dryBus.connect(this.masterFilter);
 
       this.musicBus = this.ctx.createGain();
-      this.musicBus.gain.setValueAtTime(0.72, this.ctx.currentTime);
+      this.musicBus.gain.setValueAtTime(0.62, this.ctx.currentTime);
       this.musicBus.connect(this.dryBus);
 
       this.drumBus = this.ctx.createGain();
@@ -214,7 +216,7 @@
       this.drumBus.connect(this.dryBus);
 
       this.sfxBus = this.ctx.createGain();
-      this.sfxBus.gain.setValueAtTime(0.92, this.ctx.currentTime);
+      this.sfxBus.gain.setValueAtTime(0.75, this.ctx.currentTime);
       this.sfxBus.connect(this.dryBus);
 
       // --- Delay and Reverb Aux Buses ---
@@ -243,10 +245,11 @@
         audioEl.preload = "auto";
         const mediaSource = this.ctx.createMediaElementSource(audioEl);
         const trackGain = this.ctx.createGain();
-        trackGain.gain.setValueAtTime(0.95, this.ctx.currentTime);
+        trackGain.gain.setValueAtTime(idx === this.currentStageIndex ? 0.95 : 0.0001, this.ctx.currentTime);
         mediaSource.connect(trackGain);
         trackGain.connect(this.musicBus);
         this.externalTracks[idx] = audioEl;
+        this.externalTrackGains[idx] = trackGain;
         this.externalTrackReady[idx] = true;
       });
     }
@@ -255,11 +258,20 @@
       const idx = this.currentStageIndex;
       this.externalTracks.forEach((el, i) => {
         if (!el) return;
+        const g = this.externalTrackGains[i];
         if (this.isPlaying && i === idx && this.externalTrackReady[i]) {
+          if (g && this.ctx) {
+            g.gain.cancelScheduledValues(this.ctx.currentTime);
+            g.gain.setValueAtTime(0.95, this.ctx.currentTime);
+          }
           el.play().catch(() => {});
           this.activeExternalAudio = el;
-        } else {
+        } else if (!this.isPlaying) {
           el.pause();
+          if (g && this.ctx) {
+            g.gain.cancelScheduledValues(this.ctx.currentTime);
+            g.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+          }
         }
       });
     }
@@ -293,34 +305,36 @@
       this.delayRight.delayTime.setValueAtTime(beatSec * 0.75, t); // Dotted 8th note
 
       this.delayFeedback = this.ctx.createGain();
-      this.delayFeedback.gain.setValueAtTime(0.35, t);
+      this.delayFeedback.gain.setValueAtTime(0.28, t);
 
       this.delayFilter = this.ctx.createBiquadFilter();
       this.delayFilter.type = 'lowpass';
-      this.delayFilter.frequency.setValueAtTime(2800, t);
-      this.delayFilter.Q.setValueAtTime(0.8, t);
+      this.delayFilter.frequency.setValueAtTime(2200, t);
+      this.delayFilter.Q.setValueAtTime(0.7, t);
 
       // Stereo panning for delay taps
       this.delayPanLeft = this._createPanner(-0.7);
       this.delayPanRight = this._createPanner(0.7);
 
-      // Cross-feedback ping-pong routing
+      // Ping-pong routing:
+      // Input -> delayLeft
       this.delaySendBus.connect(this.delayLeft);
-      this.delaySendBus.connect(this.delayRight);
 
-      // Left branch
+      // Left branch: Input -> delayLeft -> delayPanLeft -> dryBus
       this.delayLeft.connect(this.delayPanLeft);
       this.delayPanLeft.connect(this.dryBus);
-      this.delayLeft.connect(this.delayFilter);
 
-      // Filter -> Feedback -> Right
+      // delayLeft -> delayFilter (lowpass 2200Hz, Q 0.7) -> delayFeedback (gain 0.28) -> delayRight
+      this.delayLeft.connect(this.delayFilter);
       this.delayFilter.connect(this.delayFeedback);
       this.delayFeedback.connect(this.delayRight);
 
-      // Right branch
+      // Right branch: delayRight -> delayPanRight -> dryBus
       this.delayRight.connect(this.delayPanRight);
       this.delayPanRight.connect(this.dryBus);
-      this.delayRight.connect(this.delayFeedback);
+
+      // delayRight -> delayFilter -> delayFeedback (gain 0.28) -> delayLeft
+      this.delayRight.connect(this.delayFilter);
       this.delayFeedback.connect(this.delayLeft);
     }
 
@@ -405,7 +419,7 @@
 
     _buildDangerDrone() {
       this.dangerGain = this.ctx.createGain();
-      this.dangerGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+      this.dangerGain.gain.setValueAtTime(0.0, this.ctx.currentTime);
 
       this.dangerFilter = this.ctx.createBiquadFilter();
       this.dangerFilter.type = 'bandpass';
@@ -481,12 +495,27 @@
       this.resume();
       if (!this.ctx) return this;
 
+      const targetStage = clamp(Math.floor(stageIndex), 0, STAGES.length - 1);
+
       if (this.isPlaying) {
-        this.setStage(stageIndex);
+        if (this.currentStageIndex !== targetStage) {
+          this.crossfadeToStage(targetStage, 2.8);
+        }
         return this;
       }
 
-      this.setStage(stageIndex);
+      this.currentStageIndex = targetStage;
+      this.currentStage = STAGES[targetStage];
+      this.currentBpm = this.currentStage.bpm;
+
+      // Update delay times smoothly to match new BPM
+      if (this.delayLeft && this.ctx) {
+        const beatSec = 60.0 / this.currentBpm;
+        const now = this.ctx.currentTime;
+        this.delayLeft.delayTime.setTargetAtTime(beatSec * 0.5, now, 0.2);
+        this.delayRight.delayTime.setTargetAtTime(beatSec * 0.75, now, 0.2);
+      }
+
       this.isPlaying = true;
       this.musicStartTime = this.ctx.currentTime;
       this.current16thNote = 0;
@@ -509,8 +538,43 @@
 
     setStage(stageIndex) {
       const idx = clamp(Math.floor(stageIndex), 0, STAGES.length - 1);
-      this.currentStageIndex = idx;
-      this.currentStage = STAGES[idx];
+      if (this.isPlaying) {
+        this.crossfadeToStage(idx, 2.8);
+      } else {
+        this.currentStageIndex = idx;
+        this.currentStage = STAGES[idx];
+        this.currentBpm = this.currentStage.bpm;
+
+        // Update delay times smoothly to match new BPM
+        if (this.delayLeft && this.ctx) {
+          const beatSec = 60.0 / this.currentBpm;
+          const now = this.ctx.currentTime;
+          this.delayLeft.delayTime.setTargetAtTime(beatSec * 0.5, now, 0.2);
+          this.delayRight.delayTime.setTargetAtTime(beatSec * 0.75, now, 0.2);
+        }
+      }
+      return this;
+    }
+
+    crossfadeToStage(newStageIndex, durationSec = 2.8) {
+      const nextIdx = clamp(Math.floor(newStageIndex), 0, STAGES.length - 1);
+      const prevIdx = this.currentStageIndex;
+
+      if (prevIdx === nextIdx) {
+        if (this.isPlaying) {
+          const track = this.externalTracks[nextIdx];
+          const gain = this.externalTrackGains[nextIdx];
+          if (track) track.play().catch(() => {});
+          if (gain && this.ctx) {
+            gain.gain.cancelScheduledValues(this.ctx.currentTime);
+            gain.gain.setValueAtTime(0.95, this.ctx.currentTime);
+          }
+        }
+        return this;
+      }
+
+      this.currentStageIndex = nextIdx;
+      this.currentStage = STAGES[nextIdx];
       this.currentBpm = this.currentStage.bpm;
 
       // Update delay times smoothly to match new BPM
@@ -519,6 +583,47 @@
         const now = this.ctx.currentTime;
         this.delayLeft.delayTime.setTargetAtTime(beatSec * 0.5, now, 0.2);
         this.delayRight.delayTime.setTargetAtTime(beatSec * 0.75, now, 0.2);
+      }
+
+      const currTrack = this.externalTracks[prevIdx];
+      const currGain = this.externalTrackGains[prevIdx];
+      const nextTrack = this.externalTracks[nextIdx];
+      const nextGain = this.externalTrackGains[nextIdx];
+
+      this.activeExternalAudio = nextTrack;
+
+      if (this.ctx) {
+        const now = this.ctx.currentTime;
+
+        if (nextTrack) {
+          // Sincroniza la posición temporal ("misma etapa")
+          let progress = (currTrack && currTrack.duration > 0) ? (currTrack.currentTime / currTrack.duration) % 1.0 : 0.0;
+          if (nextTrack.duration > 0) {
+            nextTrack.currentTime = (progress * nextTrack.duration) % nextTrack.duration;
+          } else {
+            nextTrack.currentTime = currTrack ? (currTrack.currentTime % 180) : 0;
+          }
+
+          nextTrack.play().catch(() => {});
+
+          if (nextGain) {
+            nextGain.gain.cancelScheduledValues(now);
+            nextGain.gain.setValueAtTime(Math.max(0.0001, nextGain.gain.value), now);
+            nextGain.gain.linearRampToValueAtTime(0.95, now + durationSec);
+          }
+        }
+
+        if (currGain) {
+          currGain.gain.cancelScheduledValues(now);
+          currGain.gain.setValueAtTime(currGain.gain.value, now);
+          currGain.gain.linearRampToValueAtTime(0.0001, now + durationSec);
+        }
+
+        setTimeout(() => {
+          if (currTrack && this.currentStageIndex !== prevIdx) {
+            currTrack.pause();
+          }
+        }, durationSec * 1000 + 100);
       }
 
       return this;
@@ -1736,15 +1841,15 @@
         // Underwater time-dilation: Muffled 360Hz with high resonant Q
         this.masterFilter.frequency.setTargetAtTime(360, now, 0.18);
         this.masterFilter.Q.setTargetAtTime(4.5, now, 0.18);
-        // Infinite dreamy feedback
-        this.delayFeedback.gain.setTargetAtTime(0.72, now, 0.18);
+        // Feedback capped at 0.30
+        this.delayFeedback.gain.setTargetAtTime(0.30, now, 0.18);
         // Muffle drums into a distant heartbeat
         this.drumBus.gain.setTargetAtTime(0.18, now, 0.18);
       } else {
         // Restore wide dynamic spectrum
         this.masterFilter.frequency.setTargetAtTime(19000, now, 0.14);
         this.masterFilter.Q.setTargetAtTime(0.7, now, 0.14);
-        this.delayFeedback.gain.setTargetAtTime(0.35, now, 0.14);
+        this.delayFeedback.gain.setTargetAtTime(0.28, now, 0.14);
         this.drumBus.gain.setTargetAtTime(0.85, now, 0.14);
       }
     }
@@ -1768,7 +1873,7 @@
       this.masterFilter.Q.exponentialRampToValueAtTime(0.7, now + 1.2);
 
       // Restore drum bus and delay feedback
-      this.delayFeedback.gain.setTargetAtTime(0.35, now, 0.4);
+      this.delayFeedback.gain.setTargetAtTime(0.28, now, 0.4);
       this.drumBus.gain.setTargetAtTime(0.85, now, 0.4);
       this.inZone = false;
 
@@ -1850,8 +1955,8 @@
       this.dangerLevel = clamped;
       if (!this.dangerGain || !this.ctx) return;
       const now = this.ctx.currentTime;
-      // Exponential feeling for tension swell
-      const targetGain = Math.pow(clamped, 1.8) * 0.42 + (clamped > 0 ? 0.0001 : 0);
+      // When dangerLevel <= 0.02, gain strictly drops to 0.0 to eliminate continuous hum
+      const targetGain = clamped <= 0.02 ? 0.0 : Math.pow(clamped, 1.8) * 0.42;
       this.dangerGain.gain.cancelScheduledValues(now);
       this.dangerGain.gain.setTargetAtTime(targetGain, now, 0.1);
     }

@@ -38,12 +38,12 @@
     <span id="mobile-zone-charge-pct" class="mobile-zone-pct">0%</span>
   </button>
 
-  <!-- Mobile Dedicated Header Strip (Ultra-compact 44px top bar) -->
+  <!-- Mobile Dedicated Header Strip (54px Neobrutalist top bar) -->
   <header class="mobile-hud-top-bar" id="mobile-top-bar" aria-label="Barra de información móvil">
     <div class="mobile-top-left">
-      <span id="mobile-stage-badge" class="comic-badge-sm">F1</span>
-      <button id="mobile-btn-pause" class="mobile-icon-btn" title="Pausa">⏸️</button>
-      <button id="mobile-btn-mute" class="mobile-icon-btn" title="Silenciar">🔊</button>
+      <button id="mobile-stage-badge" class="comic-badge-sm mobile-stage-badge-btn" title="Cambiar fase (Toca para alternar F1/F2/F3)" aria-label="Cambiar fase">F1</button>
+      <button id="mobile-btn-pause" class="mobile-icon-btn mobile-pause-btn" title="Pausa">⏸️</button>
+      <button id="mobile-btn-mute" class="mobile-icon-btn mobile-mute-btn" title="Silenciar">🔊</button>
     </div>
     <div class="mobile-top-stats">
       <div class="mstat">
@@ -78,15 +78,15 @@
         <div class="stage-info-header">
           <span id="hud-stage-badge" class="comic-sticker stage-badge">FASE 1</span>
           <div class="stage-text-group">
-            <span id="hud-stage-name" class="stage-name">Abismo Bioluminiscente</span>
-            <span id="hud-stage-sub" class="stage-sub">110 BPM · D Dorian</span>
+            <span id="hud-stage-name" class="stage-name">Atardecer en la Alhambra</span>
+            <span id="hud-stage-sub" class="stage-sub">105 BPM · Modo Frigio Andalusí</span>
           </div>
         </div>
 
         <nav class="stage-quick-nav" aria-label="Selector de fase">
-          <button id="btn-stage-0" class="comic-btn stage-pill-btn active" data-stage="0" title="Fase 1: Abismo Marino">
-            <span class="btn-icon">🪼</span>
-            <span class="btn-label">ABISMO</span>
+          <button id="btn-stage-0" class="comic-btn stage-pill-btn active" data-stage="0" title="Fase 1: Atardecer en la Alhambra">
+            <span class="btn-icon">🏰</span>
+            <span class="btn-label">ALHAMBRA</span>
           </button>
           <button id="btn-stage-1" class="comic-btn stage-pill-btn" data-stage="1" title="Fase 2: Metrópolis Cyberpunk">
             <span class="btn-icon">🌆</span>
@@ -100,7 +100,7 @@
       </div>
 
       <!-- 2. HOLD Piece Comic Card -->
-      <section class="comic-card hold-card">
+      <section class="comic-card hold-card" title="Reserva de pieza táctica (Toca para guardar o intercambiar)">
         <div class="card-header">
           <span class="comic-tag tag-yellow">HOLD</span>
           <span class="card-key-badge">[C / Shift]</span>
@@ -109,6 +109,7 @@
           <canvas id="hold-canvas" width="110" height="90"></canvas>
         </div>
         <div class="card-footer-tip">RESERVA TÁCTICA</div>
+        <div class="mobile-hold-tip">⚡ TOCA HOLD</div>
       </section>
 
       <!-- 3. ZONE MECHANIC Comic Meter -->
@@ -204,13 +205,14 @@
       <!-- 2. NEXT Queue Comic Card -->
       <section class="comic-card next-card">
         <div class="card-header">
-          <span class="comic-tag tag-cyan">SIGUIENTE</span>
+          <span class="comic-tag tag-cyan"><span class="lbl-desktop">SIGUIENTE</span><span class="lbl-mobile">NEXT</span></span>
           <span class="card-counter">3 PZAS</span>
         </div>
         <div class="canvas-frame next-frame">
           <canvas id="next-canvas" width="110" height="220"></canvas>
         </div>
         <div class="card-footer-tip">COLA DE ENTRADA</div>
+        <div class="mobile-next-tip">COLA</div>
       </section>
 
       <!-- 3. STATS Comic Card -->
@@ -285,10 +287,10 @@
         <div class="stage-select-label">ELIGE TU FASE INICIAL:</div>
         <div class="stage-cards-grid">
           <button class="stage-select-btn active" data-stage="0">
-            <div class="stage-card-icon">🪼</div>
+            <div class="stage-card-icon">🏰</div>
             <div class="stage-card-info">
-              <span class="stage-card-name">1. Abismo Marino</span>
-              <span class="stage-card-meta">110 BPM · D Dorian · Bioluminiscencia</span>
+              <span class="stage-card-name">1. Atardecer en la Alhambra</span>
+              <span class="stage-card-meta">105 BPM · Modo Frigio Andalusí</span>
             </div>
             <div class="stage-card-badge">ACTIVA</div>
           </button>

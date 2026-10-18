@@ -430,9 +430,22 @@ html, body {
 .stage-pill-btn {
   padding: 6px 4px;
   font-size: 10px;
-  border-radius: 3px;
+  border: 2.5px solid var(--ink-black);
+  box-shadow: 3px 3px 0px var(--ink-black);
+  border-radius: 4px;
   flex-direction: column;
   gap: 2px;
+  transition: transform var(--snap-quick), box-shadow var(--snap-quick), background-color var(--snap-quick);
+}
+
+.stage-pill-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--ink-black);
+}
+
+.stage-pill-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--ink-black);
 }
 
 .stage-pill-btn .btn-icon {
@@ -449,7 +462,8 @@ html, body {
   background: var(--stage-accent);
   color: var(--ink-black);
   border-color: var(--ink-black);
-  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.4), 2px 2px 0px var(--ink-black);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.45), 2px 2px 0px var(--ink-black);
+  transform: translate(1px, 1px);
 }
 
 /* Canvas Frames (Hold & Next) */
@@ -1056,25 +1070,30 @@ kbd {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: #0d121c;
-  border: 2px solid var(--ink-black);
-  border-radius: 4px;
+  background: #0f172a;
+  border: 3px solid var(--ink-black);
+  border-radius: 6px;
   cursor: pointer;
-  box-shadow: var(--shadow-comic-sm);
+  box-shadow: 4px 4px 0px var(--ink-black);
   transition: transform var(--snap-quick), box-shadow var(--snap-quick), background-color var(--snap-quick);
   color: #ffffff;
   text-align: left;
 }
 
 .stage-select-btn:hover {
-  transform: translateX(4px);
-  box-shadow: 4px 4px 0px var(--ink-black);
+  transform: translate(2px, -2px);
+  box-shadow: 6px 6px 0px var(--ink-black);
+}
+
+.stage-select-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--ink-black);
 }
 
 .stage-select-btn.active {
-  background: #182234;
+  background: #1e293b;
   border-color: var(--stage-accent);
-  box-shadow: 4px 4px 0px var(--stage-accent), 4px 4px 0px var(--ink-black);
+  box-shadow: 4px 4px 0px var(--ink-black);
 }
 
 .stage-card-icon {
@@ -1318,8 +1337,15 @@ kbd {
 /* Default Desktop State: Hide Mobile Specific Elements */
 .mobile-hud-top-bar,
 .mobile-zone-thumb-btn,
-.touch-gesture-layer {
+.touch-gesture-layer,
+.lbl-mobile,
+.mobile-hold-tip,
+.mobile-next-tip {
   display: none;
+}
+
+.lbl-desktop {
+  display: inline;
 }
 
 /* Mobile Portrait Mode Breakpoint (< 768px or vertical screen) */
@@ -1374,20 +1400,50 @@ kbd {
     }
   }
 
-  /* Mobile Ultra-Compact Top Bar (~45px) */
+  /* Responsive Label Overrides for Mobile */
+  .lbl-desktop {
+    display: none !important;
+  }
+  .lbl-mobile {
+    display: inline !important;
+  }
+  .mobile-hold-tip {
+    display: block !important;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 800;
+    color: var(--comic-yellow);
+    letter-spacing: 0.5px;
+    text-align: center;
+    margin-top: 3px;
+    text-shadow: 1px 1px 0px #000000;
+    pointer-events: none;
+  }
+  .mobile-next-tip {
+    display: block !important;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 800;
+    color: var(--comic-cyan);
+    letter-spacing: 0.5px;
+    text-align: center;
+    margin-top: 3px;
+    text-shadow: 1px 1px 0px #000000;
+    pointer-events: none;
+  }
+
+  /* Mobile Neobrutalist Top Bar (54px Solid Height & High-Contrast Frame) */
   .mobile-hud-top-bar {
     display: flex;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 46px;
+    height: 54px;
     z-index: 30;
-    background: #090e17f0;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 2.5px solid var(--ink-black);
-    box-shadow: 0 4px 0px var(--ink-black);
+    background: #0f172a;
+    border-bottom: 3px solid #000000;
+    box-shadow: 0 4px 0px #000000;
     padding: 0 12px;
     align-items: center;
     justify-content: space-between;
@@ -1397,46 +1453,97 @@ kbd {
   .mobile-top-left {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
   }
 
-  .comic-badge-sm {
-    font-family: var(--font-display);
-    font-size: 11px;
-    background: var(--comic-yellow);
-    color: var(--ink-black);
-    padding: 2px 6px;
-    border: 1.5px solid var(--ink-black);
-    border-radius: 3px;
-    box-shadow: 1.5px 1.5px 0px var(--ink-black);
-    font-weight: 700;
-  }
-
-  .mobile-icon-btn {
-    background: #151e2c;
-    border: 1.5px solid var(--ink-black);
-    border-radius: 4px;
-    padding: 3px 6px;
-    font-size: 13px;
-    cursor: pointer;
-    box-shadow: 2px 2px 0px var(--ink-black);
-    color: #ffffff;
-    display: flex;
+  /* Stage Badge / Quick-Switch Pill on Mobile */
+  #mobile-stage-badge,
+  .mobile-stage-badge-btn {
+    height: 42px;
+    min-width: 42px;
+    padding: 0 8px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: transform var(--snap-quick);
+    font-family: var(--font-impact);
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    border: 2.5px solid #000000;
+    border-radius: 4px;
+    box-shadow: 3px 3px 0px #000000;
+    background: var(--comic-yellow);
+    color: #000000;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform var(--snap-quick), box-shadow var(--snap-quick), background-color var(--snap-quick);
+  }
+
+  body[data-stage="0"] #mobile-stage-badge {
+    background: #00f5d4;
+    color: #000000;
+  }
+
+  body[data-stage="1"] #mobile-stage-badge {
+    background: #ff2a85;
+    color: #ffffff;
+  }
+
+  body[data-stage="2"] #mobile-stage-badge {
+    background: #fee440;
+    color: #000000;
+  }
+
+  #mobile-stage-badge:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #000000;
+  }
+
+  /* Neobrutalist Tactile Icon Buttons (Pause & Mute) */
+  .mobile-icon-btn {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    border: 2.5px solid #000000;
+    border-radius: 4px;
+    padding: 0;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px #000000;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform var(--snap-quick), box-shadow var(--snap-quick), background-color var(--snap-quick);
+  }
+
+  .mobile-pause-btn,
+  #mobile-btn-pause {
+    background: #fee440;
+    color: #000000;
+  }
+
+  .mobile-mute-btn,
+  #mobile-btn-mute {
+    background: #00f5d4;
+    color: #000000;
   }
 
   .mobile-icon-btn:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px var(--ink-black);
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #000000;
   }
 
-  /* Compact Stats in Top Bar */
+  /* High-Contrast Readout Stats in Top Bar */
   .mobile-top-stats {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
 
   .mstat {
@@ -1448,20 +1555,23 @@ kbd {
 
   .mstat-lbl {
     font-family: var(--font-mono);
-    font-size: 8px;
-    font-weight: 700;
-    color: var(--stage-accent);
+    font-size: 8.5px;
+    font-weight: 800;
+    color: #38bdf8;
     letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 
   .mstat-val {
     font-family: var(--font-impact);
-    font-size: 15px;
+    font-size: 16px;
+    font-weight: 900;
     color: #ffffff;
     letter-spacing: 0.5px;
-    text-shadow: 1px 1px 0px var(--ink-black);
+    text-shadow: 1.5px 1.5px 0px #000000;
   }
 
+  /* Top Bar Beat Monitor */
   .mobile-top-right {
     display: flex;
     align-items: center;
@@ -1471,19 +1581,28 @@ kbd {
   .mobile-beat-box {
     display: flex;
     align-items: center;
-    gap: 5px;
-    background: #0d1420;
-    padding: 3px 6px;
-    border: 1.5px solid var(--ink-black);
+    gap: 6px;
+    background: #1e293b;
+    padding: 4px 8px;
+    height: 42px;
+    border: 2.5px solid #000000;
     border-radius: 4px;
-    box-shadow: 1.5px 1.5px 0px var(--ink-black);
+    box-shadow: 3px 3px 0px #000000;
+  }
+
+  .mobile-beat-box .beat-dot {
+    width: 9px;
+    height: 9px;
+    background: #00f5d4;
+    border: 1.5px solid #000000;
+    border-radius: 50%;
   }
 
   .mobile-bpm-val {
     font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--comic-yellow);
+    font-size: 11px;
+    font-weight: 800;
+    color: #fee440;
   }
 
   /* Reposition HUD Master Layer on Mobile */
@@ -1496,15 +1615,17 @@ kbd {
     overflow: hidden;
   }
 
-  /* Floating Mini Hold Pod (Top-Left) */
+  /* -------------------------------------------------------------------------
+     Floating Ergonomic Mini HOLD Pod (Top-Left, below 54px top bar)
+     ------------------------------------------------------------------------- */
   .hud-panel.hud-left,
   .hud-left {
     position: absolute !important;
-    top: 52px !important;
+    top: 66px !important;
     left: 10px !important;
     right: auto !important;
-    width: 68px !important;
-    max-width: 68px !important;
+    width: 78px !important;
+    max-width: 78px !important;
     min-width: 0 !important;
     pointer-events: auto;
     display: flex !important;
@@ -1521,30 +1642,46 @@ kbd {
 
   .hud-left .hold-card {
     display: flex !important;
-    width: 68px !important;
-    max-width: 68px !important;
-    padding: 3px;
+    flex-direction: column;
+    align-items: center;
+    width: 78px !important;
+    max-width: 78px !important;
+    padding: 4px;
     transform: none !important;
-    border: 2px solid var(--ink-black);
-    box-shadow: 3px 3px 0px var(--ink-black);
-    background-color: var(--stage-card-bg);
+    border: 3px solid #000000 !important;
+    box-shadow: 4px 4px 0px #000000 !important;
+    background: #0f172a !important;
+    border-radius: 6px;
     cursor: pointer;
     touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform var(--snap-quick), box-shadow var(--snap-quick);
   }
 
   .hold-card:active {
-    transform: translate(1px, 1px) !important;
-    box-shadow: 2px 2px 0px var(--ink-black);
+    transform: translate(2px, 2px) !important;
+    box-shadow: 2px 2px 0px #000000 !important;
   }
 
   .hud-left .card-header {
     justify-content: center;
-    padding-bottom: 2px;
+    padding-bottom: 3px;
+    width: 100%;
   }
 
   .hud-left .comic-tag {
-    font-size: 8px;
-    padding: 1px 4px;
+    font-family: var(--font-display) !important;
+    font-size: 9px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.5px;
+    background: #ff2a85 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #000000 !important;
+    box-shadow: 1.5px 1.5px 0px #000000 !important;
+    border-radius: 3px;
+    padding: 2px 6px !important;
+    text-transform: uppercase;
   }
 
   .hud-left .card-key-badge,
@@ -1554,30 +1691,35 @@ kbd {
 
   .hold-frame {
     min-height: auto !important;
-    width: 60px !important;
-    height: 48px !important;
+    width: 68px !important;
+    height: 52px !important;
     padding: 1px;
-    border: 1.5px solid var(--ink-black);
-    background: #080d15;
+    border: 2px solid #000000 !important;
+    background: #05080f !important;
+    box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.75);
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   #hold-canvas {
-    width: 58px !important;
-    height: 46px !important;
+    width: 64px !important;
+    height: 48px !important;
+    display: block;
   }
 
-  /* Floating Mini Next Pod (Top-Right) */
+  /* -------------------------------------------------------------------------
+     Floating Ergonomic Mini NEXT Pod (Top-Right, below 54px top bar)
+     ------------------------------------------------------------------------- */
   .hud-panel.hud-right,
   .hud-right {
     position: absolute !important;
-    top: 52px !important;
+    top: 66px !important;
     right: 10px !important;
     left: auto !important;
-    width: 68px !important;
-    max-width: 68px !important;
+    width: 78px !important;
+    max-width: 78px !important;
     min-width: 0 !important;
     align-items: flex-end !important;
     pointer-events: auto;
@@ -1595,23 +1737,36 @@ kbd {
 
   .hud-right .next-card {
     display: flex !important;
-    width: 68px !important;
-    max-width: 68px !important;
-    padding: 3px;
+    flex-direction: column;
+    align-items: center;
+    width: 78px !important;
+    max-width: 78px !important;
+    padding: 4px;
     transform: none !important;
-    border: 2px solid var(--ink-black);
-    box-shadow: 3px 3px 0px var(--ink-black);
-    background-color: var(--stage-card-bg);
+    border: 3px solid #000000 !important;
+    box-shadow: 4px 4px 0px #000000 !important;
+    background: #0f172a !important;
+    border-radius: 6px;
   }
 
   .hud-right .card-header {
     justify-content: center;
-    padding-bottom: 2px;
+    padding-bottom: 3px;
+    width: 100%;
   }
 
   .hud-right .comic-tag {
-    font-size: 8px;
-    padding: 1px 4px;
+    font-family: var(--font-display) !important;
+    font-size: 9px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.5px;
+    background: #00f5d4 !important;
+    color: #000000 !important;
+    border: 1.5px solid #000000 !important;
+    box-shadow: 1.5px 1.5px 0px #000000 !important;
+    border-radius: 3px;
+    padding: 2px 6px !important;
+    text-transform: uppercase;
   }
 
   .hud-right .card-counter,
@@ -1621,19 +1776,22 @@ kbd {
 
   .next-frame {
     min-height: auto !important;
-    width: 60px !important;
-    height: 48px !important;
+    width: 68px !important;
+    height: 52px !important;
     padding: 1px;
-    border: 1.5px solid var(--ink-black);
-    background: #080d15;
+    border: 2px solid #000000 !important;
+    background: #05080f !important;
+    box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.75);
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   #next-canvas {
-    width: 58px !important;
-    height: 46px !important;
+    width: 64px !important;
+    height: 48px !important;
+    display: block;
   }
 
   /* Center Callouts & Zone Banners in Mobile */
@@ -1657,7 +1815,7 @@ kbd {
   }
 
   .zone-banner {
-    top: 105px;
+    top: 124px;
   }
 
   .zone-banner-pill {
@@ -1665,70 +1823,105 @@ kbd {
     font-size: 11px;
   }
 
-  /* Ergonomic Floating Thumb Zone Button (Bottom-Right) */
+  /* -------------------------------------------------------------------------
+     4. Ergonomic Floating Thumb Zone Button (Bottom-Right, 74x74px Neobrutalist)
+     ------------------------------------------------------------------------- */
   .mobile-zone-thumb-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: fixed;
-    bottom: 26px;
+    bottom: 24px;
     right: 18px;
-    width: 66px;
-    height: 66px;
+    width: 74px;
+    height: 74px;
     border-radius: 50%;
-    background: #141d2b;
-    border: 3px solid var(--ink-black);
-    box-shadow: 4px 4px 0px var(--ink-black), 0 0 16px rgba(255, 42, 133, 0.4);
+    background: #0f172a;
+    border: 3.5px solid #000000;
+    box-shadow: 5px 5px 0px #000000;
     z-index: 25;
     pointer-events: auto;
     cursor: pointer;
     touch-action: manipulation;
-    transition: transform 0.12s, box-shadow 0.15s, background-color 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.12s, box-shadow 0.15s, background-color 0.2s, border-color 0.2s;
   }
 
   .mobile-zone-thumb-btn:active {
-    transform: translate(2px, 2px) scale(0.95);
-    box-shadow: 2px 2px 0px var(--ink-black);
+    transform: translate(3px, 3px) scale(0.96);
+    box-shadow: 2px 2px 0px #000000;
   }
 
   .mobile-zone-thumb-btn.charged {
-    background: #25122e;
-    border-color: var(--comic-yellow);
-    box-shadow: 4px 4px 0px var(--ink-black), 0 0 22px var(--comic-yellow);
-    animation: thumbZonePulse 1.4s infinite alternate ease-in-out;
+    background: #ff2a85;
+    border-color: #fee440;
+    box-shadow: 5px 5px 0px #000000, 0 0 20px rgba(254, 228, 64, 0.95), 0 0 35px rgba(255, 42, 133, 0.75);
+    animation: thumbZonePulse 1.2s infinite alternate ease-in-out;
+  }
+
+  body.zone-active .mobile-zone-thumb-btn {
+    background: #00f5d4;
+    border-color: #ffffff;
+    box-shadow: 5px 5px 0px #000000, 0 0 26px #00f5d4;
+    animation: thumbZoneActiveGlow 0.8s infinite alternate ease-in-out;
+  }
+
+  body.zone-active .mobile-zone-label {
+    color: #000000;
+    text-shadow: none;
   }
 
   @keyframes thumbZonePulse {
     0% {
       transform: scale(1);
-      box-shadow: 4px 4px 0px var(--ink-black), 0 0 16px var(--comic-yellow);
+      box-shadow: 5px 5px 0px #000000, 0 0 16px rgba(254, 228, 64, 0.8);
+    }
+    100% {
+      transform: scale(1.08);
+      box-shadow: 5px 5px 0px #000000, 0 0 30px #fee440, 0 0 45px #ff2a85;
+    }
+  }
+
+  @keyframes thumbZoneActiveGlow {
+    0% {
+      transform: scale(1);
+      box-shadow: 5px 5px 0px #000000, 0 0 16px #00f5d4;
     }
     100% {
       transform: scale(1.06);
-      box-shadow: 4px 4px 0px var(--ink-black), 0 0 28px var(--comic-crimson);
+      box-shadow: 5px 5px 0px #000000, 0 0 32px #00f5d4, 0 0 45px #ffffff;
     }
   }
 
   .mobile-zone-icon {
-    font-size: 20px;
+    font-size: 24px;
     line-height: 1;
-    margin-top: -2px;
+    margin-top: -3px;
+    filter: drop-shadow(0 0 4px #fee440);
   }
 
   .mobile-zone-label {
     font-family: var(--font-display);
-    font-size: 8px;
-    letter-spacing: 0.5px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
     color: #ffffff;
-    font-weight: 700;
+    font-weight: 900;
+    text-shadow: 1px 1px 0px #000000;
+    line-height: 1;
+    margin: 1px 0;
   }
 
   .mobile-zone-pct {
     font-family: var(--font-mono);
-    font-size: 9px;
-    color: var(--comic-yellow);
-    font-weight: 700;
+    font-size: 10px;
+    color: #fee440;
+    background: #000000;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1.5px solid #000000;
+    font-weight: 800;
     line-height: 1;
   }
 
@@ -1755,5 +1948,52 @@ kbd {
 
   .modal-controls-guide {
     display: none;
+  }
+
+  /* Ultra-Narrow Screen Optimization (< 360px wide) */
+  @media (max-width: 360px) {
+    .mobile-hud-top-bar {
+      padding: 0 6px;
+    }
+    .mobile-top-left {
+      gap: 4px;
+    }
+    .mobile-icon-btn,
+    #mobile-stage-badge,
+    .mobile-stage-badge-btn {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      font-size: 15px;
+    }
+    .mobile-top-stats {
+      gap: 6px;
+    }
+    .mstat-val {
+      font-size: 14px;
+    }
+    .mobile-beat-box {
+      padding: 3px 5px;
+      height: 38px;
+    }
+    .hud-panel.hud-left,
+    .hud-left {
+      left: 6px !important;
+      width: 72px !important;
+    }
+    .hud-panel.hud-right,
+    .hud-right {
+      right: 6px !important;
+      width: 72px !important;
+    }
+    .hud-left .hold-card,
+    .hud-right .next-card {
+      width: 72px !important;
+    }
+    .hold-frame,
+    .next-frame {
+      width: 62px !important;
+    }
   }
 }

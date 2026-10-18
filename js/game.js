@@ -93,9 +93,9 @@
   const STAGES_DATA = [
     {
       id: 0,
-      name: 'Abismo Bioluminiscente',
-      sub: '110 BPM · D Dorian',
-      bpm: 110,
+      name: 'Atardecer en la Alhambra',
+      sub: '105 BPM · Modo Frigio Andalusí',
+      bpm: 105,
       linesThreshold: 10
     },
     {
@@ -615,6 +615,14 @@
         this.dom.mobileBtnMute.addEventListener('click', e => {
           e.stopPropagation();
           this.toggleMute();
+        });
+      }
+      if (this.dom.mobileStageBadge) {
+        this.dom.mobileStageBadge.addEventListener('click', e => {
+          e.stopPropagation();
+          const nextStage = (this.stageIndex + 1) % 3;
+          this.setStage(nextStage, true);
+          this.triggerHaptic(24);
         });
       }
     }

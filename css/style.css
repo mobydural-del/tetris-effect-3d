@@ -1,0 +1,1759 @@
+/* ==========================================================================
+   TETRIS EFFECT: SYNESTHESIA JOURNEY 3D
+   Neobrutalist Pop-Art / Comic UI — Hi-Fi Rush & Persona 5 Inspired Edition
+   Master Stylesheet for High-Octane 3D Synesthesia & Rhythm Gameplay
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CSS Custom Properties & Dynamic Comic Stage Palettes
+   -------------------------------------------------------------------------- */
+:root {
+  /* Common Comic Inks & Surface Foundations */
+  --ink-black: #000000;
+  --ink-border-width: 3px;
+  --ink-border-heavy: 4px;
+  --paper-white: #ffffff;
+  --comic-yellow: #ffe600;
+  --comic-crimson: #ff003c;
+  --comic-cyan: #00f5d4;
+  --comic-purple: #b5179e;
+  --comic-lime: #c8ff00;
+
+  /* Typography Scales */
+  --font-display: 'Bungee', cursive, Impact, sans-serif;
+  --font-impact: 'Anton', Impact, sans-serif;
+  --font-body: 'Fredoka', 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Legacy Font Fallbacks */
+  --font-heading: var(--font-display);
+
+  /* Hard Solid Comic Offset Shadows */
+  --shadow-comic-sm: 3px 3px 0px var(--ink-black);
+  --shadow-comic-md: 5px 5px 0px var(--ink-black);
+  --shadow-comic-lg: 8px 8px 0px var(--ink-black);
+  --shadow-comic-xl: 12px 12px 0px var(--ink-black);
+
+  /* Snappy Comic Animations */
+  --snap-quick: 0.12s cubic-bezier(0.2, 0, 0, 1);
+  --snap-bounce: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Default Theme: Stage 0 (Abismo Bioluminiscente) */
+  --stage-accent: #00f5d4;        /* Cyan Volt */
+  --stage-secondary: #c8ff00;     /* Acid Lime */
+  --stage-highlight: #ff2a85;     /* Hot Coral */
+  --stage-card-bg: #0c1828;       /* Dark Abyss Card */
+  --stage-shadow: #00f5d4;
+  --stage-border: #000000;
+  --stage-glow: rgba(0, 245, 212, 0.45);
+
+  /* Legacy Neumorphic / Color tokens mapping */
+  --nm-bg: #0c1828;
+  --nm-text: #ffffff;
+  --nm-text-muted: #94a3b8;
+  --nm-text-dim: #64748b;
+  --nm-accent: var(--stage-accent);
+  --nm-accent-glow: var(--stage-glow);
+  --color-gold: #ffd600;
+  --color-gold-glow: rgba(255, 214, 0, 0.5);
+}
+
+/* Stage 0: Abismo Bioluminiscente (Aquatic Volt & Acid Lime) */
+body[data-stage="0"] {
+  --stage-accent: #00f5d4;
+  --stage-secondary: #c8ff00;
+  --stage-highlight: #ff2a85;
+  --stage-card-bg: #0c1828;
+  --stage-shadow: #00f5d4;
+  --stage-glow: rgba(0, 245, 212, 0.5);
+  --nm-accent: #00f5d4;
+  --nm-accent-glow: rgba(0, 245, 212, 0.5);
+}
+
+/* Stage 1: Metrópolis Cyberpunk (Hi-Fi Yellow & Persona Crimson) */
+body[data-stage="1"] {
+  --stage-accent: #ffe600;
+  --stage-secondary: #ff003c;
+  --stage-highlight: #00f0ff;
+  --stage-card-bg: #120d1e;
+  --stage-shadow: #ff003c;
+  --stage-glow: rgba(255, 230, 0, 0.5);
+  --nm-accent: #ffe600;
+  --nm-accent-glow: rgba(255, 230, 0, 0.5);
+}
+
+/* Stage 2: Cosmos Trascendental (Persona Velvet Violet & Astral Gold) */
+body[data-stage="2"] {
+  --stage-accent: #b5179e;
+  --stage-secondary: #ffd600;
+  --stage-highlight: #4cc9f0;
+  --stage-card-bg: #100926;
+  --stage-shadow: #ffd600;
+  --stage-glow: rgba(181, 23, 158, 0.5);
+  --nm-accent: #ffd600;
+  --nm-accent-glow: rgba(255, 214, 0, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   2. Base Reset & Halftone Typography
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #06070a;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   3. Three.js Full-Viewport 3D Container (Background Layer)
+   -------------------------------------------------------------------------- */
+#canvas-3d-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#canvas-3d-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   4. HUD Master Layer (3-Column Layout: Left Wing, Empty Center, Right Wing)
+   Zero horizontal bars covering the top or floor of the 3D Tetris box!
+   -------------------------------------------------------------------------- */
+.hud-master-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 12px 18px;
+  pointer-events: none;
+}
+
+/* Side Panels (Wings) */
+.hud-panel {
+  width: 270px;
+  min-width: 260px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  height: 100%;
+  pointer-events: auto;
+  z-index: 20;
+}
+
+.hud-left {
+  align-items: stretch;
+}
+
+.hud-right {
+  align-items: stretch;
+}
+
+/* Center Viewport: 100% Completely Unobstructed Corridor for 3D Matrix */
+.hud-center-overlay {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* --------------------------------------------------------------------------
+   5. Neobrutalist Comic Cards & Panels (Hi-Fi Rush / Persona 5 Styling)
+   -------------------------------------------------------------------------- */
+.comic-card,
+.hud-card {
+  position: relative;
+  background-color: var(--stage-card-bg);
+  /* Ben-Day Halftone Dot Pattern */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
+  background-size: 8px 8px;
+  border: var(--ink-border-width) solid var(--ink-black);
+  border-radius: 4px;
+  box-shadow: var(--shadow-comic-md), 7px 7px 0px var(--stage-shadow);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform var(--snap-bounce), box-shadow var(--snap-bounce), border-color var(--snap-quick);
+}
+
+/* Dynamic Panel Skews for Authentic Comic Layout */
+.hud-left .comic-card {
+  transform: skewX(-2deg) rotate(-0.5deg);
+}
+
+.hud-right .comic-card {
+  transform: skewX(2deg) rotate(0.5deg);
+}
+
+.hud-left .comic-card:hover {
+  transform: skewX(0deg) rotate(0deg) scale(1.02);
+  box-shadow: 6px 6px 0px var(--ink-black), 9px 9px 0px var(--stage-secondary);
+}
+
+.hud-right .comic-card:hover {
+  transform: skewX(0deg) rotate(0deg) scale(1.02);
+  box-shadow: 6px 6px 0px var(--ink-black), 9px 9px 0px var(--stage-secondary);
+}
+
+/* Card Headers */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+.card-key-badge, .card-counter {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--ink-black);
+  color: var(--comic-yellow);
+  padding: 2px 7px;
+  border: 1.5px solid var(--comic-yellow);
+  border-radius: 3px;
+  box-shadow: 2px 2px 0px var(--ink-black);
+}
+
+.card-footer-tip {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--nm-text-muted);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* --------------------------------------------------------------------------
+   6. Comic Tags & Jagged Sticker Badges
+   -------------------------------------------------------------------------- */
+.comic-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0px var(--ink-black);
+}
+
+.tag-yellow {
+  background: var(--comic-yellow);
+  color: var(--ink-black);
+}
+
+.tag-crimson {
+  background: var(--comic-crimson);
+  color: #ffffff;
+}
+
+.tag-cyan {
+  background: var(--comic-cyan);
+  color: var(--ink-black);
+}
+
+.comic-sticker {
+  display: inline-block;
+  padding: 4px 10px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 900;
+  background: var(--comic-yellow);
+  color: var(--ink-black);
+  border: 2px solid var(--ink-black);
+  box-shadow: 3px 3px 0px var(--ink-black);
+  transform: rotate(-3deg);
+  text-transform: uppercase;
+}
+
+.comic-sticker-burst {
+  display: inline-block;
+  padding: 6px 14px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  background: var(--comic-crimson);
+  color: #ffffff;
+  border: 3px solid var(--ink-black);
+  box-shadow: 4px 4px 0px var(--ink-black);
+  transform: rotate(-2deg);
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   7. Neobrutalist Tactile Buttons (.comic-btn / .nm-btn)
+   Mechanical, punchy snapping on press!
+   -------------------------------------------------------------------------- */
+.comic-btn,
+.nm-btn {
+  background: #161b24;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border: 2px solid var(--ink-black);
+  border-radius: 4px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: var(--shadow-comic-sm);
+  transition: transform var(--snap-quick), box-shadow var(--snap-quick), background-color var(--snap-quick);
+  outline: none;
+}
+
+.comic-btn:hover,
+.nm-btn:hover {
+  background: var(--stage-accent);
+  color: var(--ink-black);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--ink-black);
+}
+
+.comic-btn:active,
+.nm-btn:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0px var(--ink-black) !important;
+}
+
+.comic-btn:focus-visible,
+.nm-btn:focus-visible {
+  outline: 2px solid var(--comic-yellow);
+  outline-offset: 2px;
+}
+
+.comic-btn:disabled,
+.nm-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 2px 2px 0px var(--ink-black) !important;
+  background: #1a1e28 !important;
+  color: #64748b !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. LEFT WING: Detailed Components
+   -------------------------------------------------------------------------- */
+
+/* Stage Info Card */
+.stage-card {
+  padding: 10px 12px;
+}
+
+.stage-info-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.stage-badge {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.stage-text-group {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stage-name {
+  font-family: var(--font-impact);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--stage-secondary);
+  letter-spacing: 0.3px;
+}
+
+/* Stage Quick-Switch Selector */
+.stage-quick-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.stage-pill-btn {
+  padding: 6px 4px;
+  font-size: 10px;
+  border-radius: 3px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stage-pill-btn .btn-icon {
+  font-size: 16px;
+}
+
+.stage-pill-btn .btn-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+
+.stage-pill-btn.active {
+  background: var(--stage-accent);
+  color: var(--ink-black);
+  border-color: var(--ink-black);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.4), 2px 2px 0px var(--ink-black);
+}
+
+/* Canvas Frames (Hold & Next) */
+.canvas-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px;
+  border: 2px solid var(--ink-black);
+  background: #060910;
+  box-shadow: inset 3px 3px 0px rgba(0, 0, 0, 0.8), 2px 2px 0px var(--ink-black);
+  border-radius: 3px;
+}
+
+.hold-frame {
+  min-height: 94px;
+}
+
+.hold-frame canvas {
+  display: block;
+}
+
+/* ZONE MECHANIC: Hazard Stripes Meter & Activation */
+.zone-card {
+  position: relative;
+  overflow: visible;
+}
+
+.zone-percent-badge {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--comic-yellow);
+}
+
+.zone-meter-frame {
+  width: 100%;
+  height: 18px;
+  padding: 2px;
+  border: 2px solid var(--ink-black);
+  border-radius: 3px;
+  background: #050608;
+  box-shadow: inset 2px 2px 0px rgba(0,0,0,0.8), 2px 2px 0px var(--ink-black);
+  position: relative;
+  overflow: hidden;
+}
+
+.zone-fill-bar {
+  height: 100%;
+  /* Diagonal Hazard Stripes */
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--stage-accent),
+    var(--stage-accent) 8px,
+    var(--stage-secondary) 8px,
+    var(--stage-secondary) 16px
+  );
+  box-shadow: 0 0 10px var(--stage-accent);
+  transition: width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.zone-bar-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  background: #ffffff;
+  box-shadow: 0 0 12px #ffffff, 0 0 18px var(--stage-accent);
+}
+
+.zone-timer-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--ink-black);
+  border: 1.5px solid #222938;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.timer-label {
+  color: var(--nm-text-muted);
+}
+
+.timer-val {
+  font-weight: 700;
+  color: var(--comic-yellow);
+}
+
+.zone-btn {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+}
+
+/* Zone Ready State: Hi-Fi Rush Comic Flash */
+.zone-btn.ready {
+  background: var(--comic-yellow) !important;
+  color: var(--ink-black) !important;
+  border: 3px solid var(--ink-black) !important;
+  box-shadow: 4px 4px 0px var(--ink-black), 0 0 20px var(--comic-yellow) !important;
+  animation: zone-pop-wobble 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes zone-pop-wobble {
+  0% { transform: scale(0.98) rotate(-0.8deg); }
+  100% { transform: scale(1.02) rotate(0.8deg); }
+}
+
+/* Zone Active State on Body */
+body.zone-active .zone-card {
+  border-color: var(--comic-yellow);
+  box-shadow: 6px 6px 0px var(--ink-black), 0 0 25px var(--color-gold-glow);
+}
+
+body.zone-active .zone-btn {
+  background: var(--comic-crimson) !important;
+  color: #ffffff !important;
+}
+
+/* BPM & Beat Sync Monitor */
+.bpm-card {
+  padding: 10px 12px;
+}
+
+.bpm-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.beat-pulse-visual {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-black);
+  border: 2px solid var(--stage-accent);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0px var(--ink-black);
+}
+
+.beat-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--stage-secondary);
+  box-shadow: 0 0 8px var(--stage-secondary);
+  transition: transform 0.08s ease-out;
+}
+
+.beat-dot.pulsing {
+  transform: scale(1.7);
+  background: #ffffff;
+  box-shadow: 0 0 16px var(--stage-accent);
+}
+
+.beat-ripple {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--stage-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.beat-dot.pulsing + .beat-ripple {
+  animation: comic-ripple 0.4s cubic-bezier(0, 0.6, 0.4, 1);
+}
+
+@keyframes comic-ripple {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.bpm-text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.bpm-value {
+  font-family: var(--font-impact);
+  font-size: 18px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.bpm-sub {
+  font-family: var(--font-display);
+  font-size: 8px;
+  color: var(--stage-accent);
+  letter-spacing: 1px;
+}
+
+.sync-banner {
+  padding: 5px 8px;
+  text-align: center;
+  margin-top: 4px;
+  background: var(--ink-black);
+  border: 1.5px solid #222938;
+  border-radius: 3px;
+  transition: background-color var(--snap-quick), color var(--snap-quick);
+}
+
+.sync-banner-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--stage-accent);
+}
+
+.sync-banner.flash-perfect {
+  background: var(--comic-yellow);
+  border-color: var(--ink-black);
+  box-shadow: 2px 2px 0px var(--ink-black);
+}
+
+.sync-banner.flash-perfect .sync-banner-text {
+  color: var(--ink-black);
+}
+
+/* --------------------------------------------------------------------------
+   9. RIGHT WING: Detailed Components
+   -------------------------------------------------------------------------- */
+
+/* Utility Strip Card */
+.utility-card {
+  padding: 8px 10px;
+}
+
+.top-utility-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.util-btn {
+  padding: 6px 4px;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 3px;
+}
+
+.util-btn .util-icon {
+  font-size: 15px;
+}
+
+.util-btn .util-label {
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.util-btn.active {
+  background: var(--comic-yellow);
+  color: var(--ink-black);
+  border-color: var(--ink-black);
+}
+
+/* Next Queue Card */
+.next-card {
+  padding: 10px 14px;
+}
+
+.next-frame {
+  min-height: 226px;
+}
+
+.next-frame canvas {
+  display: block;
+}
+
+/* Stats Card */
+.stats-card {
+  padding: 10px 14px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.stat-item {
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--ink-black);
+  border: 1.5px solid #202736;
+  border-radius: 3px;
+}
+
+.stat-wide {
+  grid-column: span 2;
+}
+
+.stat-label {
+  font-size: 8px;
+  font-family: var(--font-display);
+  letter-spacing: 0.8px;
+  color: var(--nm-text-muted);
+  margin-bottom: 2px;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.stat-value.highlight {
+  color: var(--stage-accent);
+}
+
+.sync-rate-value {
+  color: var(--comic-yellow);
+}
+
+/* Compact Comic Keybind Sticker (Snug in right wing, zero floor blockage) */
+.comic-keybind-sticker {
+  position: relative;
+  background: var(--comic-yellow);
+  color: var(--ink-black);
+  border: 3px solid var(--ink-black);
+  border-radius: 3px;
+  box-shadow: 4px 4px 0px var(--ink-black);
+  padding: 8px 10px;
+  transform: skewX(2deg) rotate(0.8deg);
+}
+
+.sticker-tag {
+  display: inline-block;
+  background: var(--comic-crimson);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 1px 6px;
+  border: 1.5px solid var(--ink-black);
+  margin-bottom: 5px;
+  box-shadow: 1.5px 1.5px 0px var(--ink-black);
+  transform: rotate(-2deg);
+}
+
+.sticker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.key-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+kbd {
+  display: inline-block;
+  background: var(--ink-black);
+  color: #ffffff;
+  border: 1px solid var(--ink-black);
+  border-radius: 2px;
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   10. CENTER VIEWPORT FLOATING CALLOUTS (Completely Unobstructed Floor)
+   -------------------------------------------------------------------------- */
+.action-callout {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: comic-burst-pop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  will-change: transform, opacity;
+  z-index: 30;
+}
+
+.callout-comic-bubble {
+  background: var(--comic-yellow);
+  border: 4px solid var(--ink-black);
+  box-shadow: 8px 8px 0px var(--ink-black);
+  padding: 12px 32px;
+  transform: rotate(-3deg);
+  text-align: center;
+}
+
+.callout-main-text {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--ink-black);
+  text-transform: uppercase;
+  line-height: 1;
+  text-shadow: 2px 2px 0px #ffffff;
+}
+
+.callout-sub-text {
+  font-family: var(--font-impact);
+  font-size: 20px;
+  letter-spacing: 1.5px;
+  color: var(--comic-crimson);
+  margin-top: 4px;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0px var(--ink-black);
+}
+
+@keyframes comic-burst-pop {
+  0% { transform: translateX(-50%) scale(0.4) rotate(-8deg); opacity: 0; }
+  25% { transform: translateX(-50%) scale(1.15) rotate(-3deg); opacity: 1; }
+  75% { transform: translateX(-50%) scale(1) rotate(-3deg); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(-25px) scale(0.9) rotate(-1deg); opacity: 0; }
+}
+
+/* Zone Mode Overlay Banner */
+.zone-banner {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: comic-banner-float 2.5s ease-in-out infinite alternate;
+  z-index: 30;
+}
+
+.zone-banner-pill {
+  background: var(--comic-yellow);
+  border: 4px solid var(--ink-black);
+  box-shadow: 6px 6px 0px var(--ink-black), 0 0 25px rgba(255, 230, 0, 0.5);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: rotate(1deg);
+}
+
+.zone-banner-icon {
+  font-size: 18px;
+}
+
+.zone-banner-text {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: var(--ink-black);
+}
+
+@keyframes comic-banner-float {
+  0% { transform: translateX(-50%) translateY(0) rotate(1deg); }
+  100% { transform: translateX(-50%) translateY(-6px) rotate(-1deg); }
+}
+
+/* --------------------------------------------------------------------------
+   11. MODALS: All-Out Attack Persona 5 / Hi-Fi Rush Comic Style
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(4, 5, 8, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  pointer-events: auto;
+  transition: opacity var(--snap-quick);
+}
+
+.modal-backdrop.hidden,
+.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.comic-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--stage-card-bg);
+  border: var(--ink-border-heavy) solid var(--ink-black);
+  border-radius: 4px;
+  box-shadow: var(--shadow-comic-xl), 16px 16px 0px var(--stage-shadow);
+  padding: 28px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+  transform: rotate(-1deg);
+  animation: modal-slam 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modal-slam {
+  0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+  100% { transform: scale(1) rotate(-1deg); opacity: 1; }
+}
+
+.modal-card-sm {
+  max-width: 420px;
+  text-align: center;
+}
+
+.modal-card-md {
+  max-width: 480px;
+  text-align: center;
+}
+
+/* Halftone Overlay on Modals */
+.modal-halftone-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
+  background-size: 8px 8px;
+  pointer-events: none;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  z-index: 2;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-shadow: 4px 4px 0px var(--ink-black);
+  line-height: 1.1;
+  margin-top: 4px;
+}
+
+.modal-subtitle {
+  font-family: var(--font-impact);
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: var(--stage-accent);
+  text-transform: uppercase;
+}
+
+.modal-description {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  text-align: center;
+  z-index: 2;
+}
+
+/* Modal Stage Selector */
+.modal-stage-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 2;
+}
+
+.stage-select-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--comic-yellow);
+}
+
+.stage-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.stage-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #0d121c;
+  border: 2px solid var(--ink-black);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: var(--shadow-comic-sm);
+  transition: transform var(--snap-quick), box-shadow var(--snap-quick), background-color var(--snap-quick);
+  color: #ffffff;
+  text-align: left;
+}
+
+.stage-select-btn:hover {
+  transform: translateX(4px);
+  box-shadow: 4px 4px 0px var(--ink-black);
+}
+
+.stage-select-btn.active {
+  background: #182234;
+  border-color: var(--stage-accent);
+  box-shadow: 4px 4px 0px var(--stage-accent), 4px 4px 0px var(--ink-black);
+}
+
+.stage-card-icon {
+  font-size: 22px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-black);
+  border: 2px solid var(--ink-black);
+  border-radius: 4px;
+  box-shadow: 2px 2px 0px var(--ink-black);
+}
+
+.stage-card-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stage-card-name {
+  font-family: var(--font-impact);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.stage-card-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--stage-accent);
+}
+
+.stage-card-badge {
+  font-family: var(--font-display);
+  font-size: 9px;
+  padding: 2px 6px;
+  background: var(--comic-yellow);
+  color: var(--ink-black);
+  border: 1.5px solid var(--ink-black);
+  border-radius: 2px;
+}
+
+/* Modal Controls Guide */
+.modal-controls-guide {
+  padding: 10px 14px;
+  background: #090d14;
+  border: 2px solid var(--ink-black);
+  border-radius: 4px;
+  box-shadow: var(--shadow-comic-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+}
+
+.guide-title {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--comic-yellow);
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.guide-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guide-keys {
+  display: flex;
+  gap: 3px;
+  min-width: 55px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 4px;
+  z-index: 2;
+}
+
+.modal-actions-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  z-index: 2;
+}
+
+.modal-primary-btn {
+  width: 100%;
+  padding: 13px 20px;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  color: var(--ink-black);
+  background: var(--comic-yellow);
+  border: 3px solid var(--ink-black);
+  box-shadow: 5px 5px 0px var(--ink-black);
+}
+
+.modal-primary-btn:hover {
+  background: #ffffff;
+  color: var(--ink-black);
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0px var(--ink-black);
+}
+
+.modal-secondary-btn {
+  width: 100%;
+  padding: 11px 18px;
+  font-size: 12px;
+  color: #ffffff;
+  background: #18202e;
+  border: 2px solid var(--ink-black);
+  box-shadow: 4px 4px 0px var(--ink-black);
+}
+
+/* Game Over Stats */
+.gameover-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  z-index: 2;
+}
+
+.stat-box-large {
+  padding: 12px 18px;
+  background: var(--ink-black);
+  border: 2px solid var(--comic-yellow);
+  box-shadow: 4px 4px 0px var(--ink-black);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.box-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--comic-yellow);
+  margin-bottom: 2px;
+}
+
+.box-value {
+  font-family: var(--font-impact);
+  font-size: 38px;
+  letter-spacing: 1px;
+}
+
+.box-value.accent-text {
+  color: #ffffff;
+  text-shadow: 2px 2px 0px var(--stage-accent);
+}
+
+.stat-mini-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   12. Responsive Breakpoints & Compact Optimization (ChromeOS / Laptops)
+   -------------------------------------------------------------------------- */
+@media (max-height: 820px) {
+  .hud-master-layer {
+    padding: 8px 14px;
+  }
+  .hud-panel {
+    width: 250px;
+    gap: 6px;
+  }
+  .comic-card,
+  .hud-card {
+    padding: 8px 10px;
+    gap: 5px;
+  }
+  .stage-name {
+    font-size: 14px;
+  }
+  .hold-frame {
+    min-height: 82px;
+    padding: 4px;
+  }
+  .next-frame {
+    min-height: 195px;
+    padding: 4px;
+  }
+  #next-canvas {
+    width: 95px;
+    height: 195px;
+  }
+  #hold-canvas {
+    width: 95px;
+    height: 75px;
+  }
+  .comic-modal-card {
+    padding: 18px 22px;
+    gap: 10px;
+  }
+  .modal-title {
+    font-size: 24px;
+  }
+  .stage-select-btn {
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 769px) {
+  .hud-panel {
+    width: 200px;
+  }
+  .stage-pill-btn .btn-label {
+    display: none;
+  }
+  .util-btn .util-label {
+    display: none;
+  }
+  .comic-keybind-sticker {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. Mobile Vertical / Portrait Engine & Responsive Touch UI
+   -------------------------------------------------------------------------- */
+
+/* Default Desktop State: Hide Mobile Specific Elements */
+.mobile-hud-top-bar,
+.mobile-zone-thumb-btn,
+.touch-gesture-layer {
+  display: none;
+}
+
+/* Mobile Portrait Mode Breakpoint (< 768px or vertical screen) */
+@media (max-width: 768px), (orientation: portrait) {
+  html, body {
+    overflow: hidden !important;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    touch-action: none !important;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Fullscreen Touch Surface Layer */
+  .touch-gesture-layer {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 12;
+    touch-action: none;
+    pointer-events: auto;
+  }
+
+  .touch-effects-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .touch-ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid var(--comic-yellow);
+    box-shadow: 0 0 14px var(--stage-accent), inset 0 0 10px var(--stage-accent);
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.9;
+    pointer-events: none;
+    animation: touchRippleAnim 0.38s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  }
+
+  @keyframes touchRippleAnim {
+    0% {
+      transform: translate(-50%, -50%) scale(0.2);
+      opacity: 0.95;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1.6);
+      opacity: 0;
+    }
+  }
+
+  /* Mobile Ultra-Compact Top Bar (~45px) */
+  .mobile-hud-top-bar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 46px;
+    z-index: 30;
+    background: #090e17f0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 2.5px solid var(--ink-black);
+    box-shadow: 0 4px 0px var(--ink-black);
+    padding: 0 12px;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: auto;
+  }
+
+  .mobile-top-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .comic-badge-sm {
+    font-family: var(--font-display);
+    font-size: 11px;
+    background: var(--comic-yellow);
+    color: var(--ink-black);
+    padding: 2px 6px;
+    border: 1.5px solid var(--ink-black);
+    border-radius: 3px;
+    box-shadow: 1.5px 1.5px 0px var(--ink-black);
+    font-weight: 700;
+  }
+
+  .mobile-icon-btn {
+    background: #151e2c;
+    border: 1.5px solid var(--ink-black);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--ink-black);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--snap-quick);
+  }
+
+  .mobile-icon-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px var(--ink-black);
+  }
+
+  /* Compact Stats in Top Bar */
+  .mobile-top-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mstat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+  }
+
+  .mstat-lbl {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--stage-accent);
+    letter-spacing: 0.5px;
+  }
+
+  .mstat-val {
+    font-family: var(--font-impact);
+    font-size: 15px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 0px var(--ink-black);
+  }
+
+  .mobile-top-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mobile-beat-box {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #0d1420;
+    padding: 3px 6px;
+    border: 1.5px solid var(--ink-black);
+    border-radius: 4px;
+    box-shadow: 1.5px 1.5px 0px var(--ink-black);
+  }
+
+  .mobile-bpm-val {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--comic-yellow);
+  }
+
+  /* Reposition HUD Master Layer on Mobile */
+  .hud-master-layer {
+    position: fixed;
+    inset: 0;
+    padding: 0;
+    pointer-events: none;
+    display: block;
+    overflow: hidden;
+  }
+
+  /* Floating Mini Hold Pod (Top-Left) */
+  .hud-panel.hud-left,
+  .hud-left {
+    position: absolute !important;
+    top: 52px !important;
+    left: 10px !important;
+    right: auto !important;
+    width: 68px !important;
+    max-width: 68px !important;
+    min-width: 0 !important;
+    pointer-events: auto;
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 20;
+  }
+
+  .hud-left .stage-card,
+  .hud-left .zone-card,
+  .hud-left .bpm-card {
+    display: none !important;
+  }
+
+  .hud-left .hold-card {
+    display: flex !important;
+    width: 68px !important;
+    max-width: 68px !important;
+    padding: 3px;
+    transform: none !important;
+    border: 2px solid var(--ink-black);
+    box-shadow: 3px 3px 0px var(--ink-black);
+    background-color: var(--stage-card-bg);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .hold-card:active {
+    transform: translate(1px, 1px) !important;
+    box-shadow: 2px 2px 0px var(--ink-black);
+  }
+
+  .hud-left .card-header {
+    justify-content: center;
+    padding-bottom: 2px;
+  }
+
+  .hud-left .comic-tag {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+
+  .hud-left .card-key-badge,
+  .hud-left .card-footer-tip {
+    display: none !important;
+  }
+
+  .hold-frame {
+    min-height: auto !important;
+    width: 60px !important;
+    height: 48px !important;
+    padding: 1px;
+    border: 1.5px solid var(--ink-black);
+    background: #080d15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #hold-canvas {
+    width: 58px !important;
+    height: 46px !important;
+  }
+
+  /* Floating Mini Next Pod (Top-Right) */
+  .hud-panel.hud-right,
+  .hud-right {
+    position: absolute !important;
+    top: 52px !important;
+    right: 10px !important;
+    left: auto !important;
+    width: 68px !important;
+    max-width: 68px !important;
+    min-width: 0 !important;
+    align-items: flex-end !important;
+    pointer-events: auto;
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 20;
+  }
+
+  .hud-right .utility-card,
+  .hud-right .stats-card,
+  .hud-right .comic-keybind-sticker {
+    display: none !important;
+  }
+
+  .hud-right .next-card {
+    display: flex !important;
+    width: 68px !important;
+    max-width: 68px !important;
+    padding: 3px;
+    transform: none !important;
+    border: 2px solid var(--ink-black);
+    box-shadow: 3px 3px 0px var(--ink-black);
+    background-color: var(--stage-card-bg);
+  }
+
+  .hud-right .card-header {
+    justify-content: center;
+    padding-bottom: 2px;
+  }
+
+  .hud-right .comic-tag {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+
+  .hud-right .card-counter,
+  .hud-right .card-footer-tip {
+    display: none !important;
+  }
+
+  .next-frame {
+    min-height: auto !important;
+    width: 60px !important;
+    height: 48px !important;
+    padding: 1px;
+    border: 1.5px solid var(--ink-black);
+    background: #080d15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #next-canvas {
+    width: 58px !important;
+    height: 46px !important;
+  }
+
+  /* Center Callouts & Zone Banners in Mobile */
+  .hud-center-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 22;
+  }
+
+  .action-callout {
+    top: 32%;
+  }
+
+  .callout-comic-bubble {
+    padding: 10px 18px;
+  }
+
+  .callout-main-text {
+    font-size: 32px;
+  }
+
+  .zone-banner {
+    top: 105px;
+  }
+
+  .zone-banner-pill {
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+
+  /* Ergonomic Floating Thumb Zone Button (Bottom-Right) */
+  .mobile-zone-thumb-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 26px;
+    right: 18px;
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    background: #141d2b;
+    border: 3px solid var(--ink-black);
+    box-shadow: 4px 4px 0px var(--ink-black), 0 0 16px rgba(255, 42, 133, 0.4);
+    z-index: 25;
+    pointer-events: auto;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.12s, box-shadow 0.15s, background-color 0.2s;
+  }
+
+  .mobile-zone-thumb-btn:active {
+    transform: translate(2px, 2px) scale(0.95);
+    box-shadow: 2px 2px 0px var(--ink-black);
+  }
+
+  .mobile-zone-thumb-btn.charged {
+    background: #25122e;
+    border-color: var(--comic-yellow);
+    box-shadow: 4px 4px 0px var(--ink-black), 0 0 22px var(--comic-yellow);
+    animation: thumbZonePulse 1.4s infinite alternate ease-in-out;
+  }
+
+  @keyframes thumbZonePulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 4px 4px 0px var(--ink-black), 0 0 16px var(--comic-yellow);
+    }
+    100% {
+      transform: scale(1.06);
+      box-shadow: 4px 4px 0px var(--ink-black), 0 0 28px var(--comic-crimson);
+    }
+  }
+
+  .mobile-zone-icon {
+    font-size: 20px;
+    line-height: 1;
+    margin-top: -2px;
+  }
+
+  .mobile-zone-label {
+    font-family: var(--font-display);
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .mobile-zone-pct {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--comic-yellow);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* Modals Optimization on Mobile */
+  .comic-modal-card {
+    width: 92%;
+    max-width: 360px;
+    padding: 16px 16px;
+    gap: 10px;
+  }
+
+  .modal-title {
+    font-size: 26px;
+  }
+
+  .modal-subtitle {
+    font-size: 13px;
+  }
+
+  .modal-description {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .modal-controls-guide {
+    display: none;
+  }
+}

@@ -1,0 +1,12 @@
+# System & OS
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local scratch and logs
+*.log
+.system_generated/
+scratch/

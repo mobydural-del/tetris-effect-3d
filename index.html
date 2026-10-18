@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TETRIS EFFECT: SYNESTHESIA JOURNEY 3D</title>
+  <meta name="description" content="Tetris Effect 3D — Hi-Fi Rush & Persona 5 Neobrutalist Pop-Art Comic Edition.">
+  
+  <!-- Favicon SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+  <!-- Google Fonts: Bungee, Anton, Fredoka, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bungee&family=Fredoka:wght@600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+
+  <!-- Three.js r128 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Neobrutalist Comic Pop Master Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-stage="0">
+
+  <!-- Three.js Full-Viewport 3D WebGL Canvas Container -->
+  <div id="canvas-3d-container"></div>
+
+  <!-- Mobile Touch Gesture Layer (Catches taps, swipes, drags over full screen) -->
+  <div id="touch-gesture-layer" class="touch-gesture-layer" aria-label="Zona táctil de juego">
+    <div id="touch-effects-overlay" class="touch-effects-overlay"></div>
+  </div>
+
+  <!-- Mobile Ergonomic Thumb Zone Button (Floats at bottom right) -->
+  <button id="mobile-zone-thumb-btn" class="mobile-zone-thumb-btn" aria-label="Activar Modo Zona">
+    <div class="mobile-zone-halo"></div>
+    <span class="mobile-zone-icon">⚡</span>
+    <span class="mobile-zone-label">ZONA</span>
+    <span id="mobile-zone-charge-pct" class="mobile-zone-pct">0%</span>
+  </button>
+
+  <!-- Mobile Dedicated Header Strip (Ultra-compact 44px top bar) -->
+  <header class="mobile-hud-top-bar" id="mobile-top-bar" aria-label="Barra de información móvil">
+    <div class="mobile-top-left">
+      <span id="mobile-stage-badge" class="comic-badge-sm">F1</span>
+      <button id="mobile-btn-pause" class="mobile-icon-btn" title="Pausa">⏸️</button>
+      <button id="mobile-btn-mute" class="mobile-icon-btn" title="Silenciar">🔊</button>
+    </div>
+    <div class="mobile-top-stats">
+      <div class="mstat">
+        <span class="mstat-lbl">PTS</span>
+        <span id="mobile-hud-score" class="mstat-val">0</span>
+      </div>
+      <div class="mstat">
+        <span class="mstat-lbl">NIV</span>
+        <span id="mobile-hud-level" class="mstat-val">1</span>
+      </div>
+      <div class="mstat">
+        <span class="mstat-lbl">LÍN</span>
+        <span id="mobile-hud-lines" class="mstat-val">0</span>
+      </div>
+    </div>
+    <div class="mobile-top-right">
+      <div class="mobile-beat-box">
+        <span id="mobile-beat-pulse-dot" class="beat-dot"></span>
+        <span id="mobile-hud-bpm" class="mobile-bpm-val">110</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- HUD Master Layer (3-Column Layout on Desktop / Corner Pods on Mobile) -->
+  <div class="hud-master-layer">
+
+    <!-- ==================== LEFT WING (~270px) ==================== -->
+    <aside class="hud-panel hud-left" aria-label="Panel izquierdo - Retención y Modo Zona">
+
+      <!-- 1. Stage Info Comic Card & Quick-Switch Selector -->
+      <div class="comic-card stage-card">
+        <div class="stage-info-header">
+          <span id="hud-stage-badge" class="comic-sticker stage-badge">FASE 1</span>
+          <div class="stage-text-group">
+            <span id="hud-stage-name" class="stage-name">Abismo Bioluminiscente</span>
+            <span id="hud-stage-sub" class="stage-sub">110 BPM · D Dorian</span>
+          </div>
+        </div>
+
+        <nav class="stage-quick-nav" aria-label="Selector de fase">
+          <button id="btn-stage-0" class="comic-btn stage-pill-btn active" data-stage="0" title="Fase 1: Abismo Marino">
+            <span class="btn-icon">🪼</span>
+            <span class="btn-label">ABISMO</span>
+          </button>
+          <button id="btn-stage-1" class="comic-btn stage-pill-btn" data-stage="1" title="Fase 2: Metrópolis Cyberpunk">
+            <span class="btn-icon">🌆</span>
+            <span class="btn-label">CYBER</span>
+          </button>
+          <button id="btn-stage-2" class="comic-btn stage-pill-btn" data-stage="2" title="Fase 3: Cosmos Trascendental">
+            <span class="btn-icon">🌌</span>
+            <span class="btn-label">COSMOS</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- 2. HOLD Piece Comic Card -->
+      <section class="comic-card hold-card">
+        <div class="card-header">
+          <span class="comic-tag tag-yellow">HOLD</span>
+          <span class="card-key-badge">[C / Shift]</span>
+        </div>
+        <div class="canvas-frame hold-frame">
+          <canvas id="hold-canvas" width="110" height="90"></canvas>
+        </div>
+        <div class="card-footer-tip">RESERVA TÁCTICA</div>
+      </section>
+
+      <!-- 3. ZONE MECHANIC Comic Meter -->
+      <section class="comic-card zone-card" id="zone-container">
+        <div class="card-header">
+          <span class="comic-tag tag-crimson">MODO ZONA</span>
+          <span id="zone-percent" class="zone-percent-badge">0%</span>
+        </div>
+
+        <!-- Meter bar with diagonal hazard stripes -->
+        <div class="zone-meter-frame" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div id="zone-fill-bar" class="zone-fill-bar" style="width: 0%;">
+            <div class="zone-bar-glow"></div>
+          </div>
+        </div>
+
+        <!-- Zone Timer readout -->
+        <div id="zone-timer-container" class="zone-timer-box">
+          <span class="timer-label">ENERGÍA:</span>
+          <span id="zone-timer-text" class="timer-val">LISTO</span>
+        </div>
+
+        <!-- Zone Activation Button -->
+        <button id="btn-activate-zone" class="comic-btn zone-btn" disabled title="Presiona [Z] con 25%+ de energía para detener el tiempo">
+          <span class="zone-btn-icon">⚡</span>
+          <span class="zone-btn-text">MODO ZONA [Z]</span>
+        </button>
+      </section>
+
+      <!-- 4. BPM & Beat Sync Cat/Amp Monitor -->
+      <section class="comic-card bpm-card">
+        <div class="bpm-row">
+          <div class="beat-pulse-visual">
+            <div id="beat-pulse-dot" class="beat-dot"></div>
+            <div class="beat-ripple"></div>
+          </div>
+          <div class="bpm-text-group">
+            <span id="hud-bpm" class="bpm-value">110 BPM</span>
+            <span class="bpm-sub">BEAT SYNC AMP</span>
+          </div>
+        </div>
+        <div id="sync-feedback-banner" class="sync-banner">
+          <span class="sync-banner-text">SINCRONÍA RÍTMICA</span>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ==================== CENTER VIEWPORT (100% UNOBSTRUCTED) ==================== -->
+    <div class="hud-center-overlay" aria-live="polite">
+      <!-- Action Callout (Tetris, T-Spin, Combo, etc.) -->
+      <div id="action-callout" class="action-callout hidden">
+        <div class="callout-comic-bubble">
+          <div class="callout-main-text">TETRIS!</div>
+          <div class="callout-sub-text">+1,200 PTS</div>
+        </div>
+      </div>
+
+      <!-- Zone Mode Overlay Banner (positioned near upper-middle, zero floor blockage) -->
+      <div id="zone-overlay-banner" class="zone-banner hidden">
+        <div class="zone-banner-pill">
+          <span class="zone-banner-icon">⏳</span>
+          <span class="zone-banner-text">TIEMPO DETENIDO · MODO ZONA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== RIGHT WING (~270px) ==================== -->
+    <aside class="hud-panel hud-right" aria-label="Panel derecho - Siguiente y Estadísticas">
+
+      <!-- 1. Utility Comic Action Strip -->
+      <div class="comic-card utility-card">
+        <div class="top-utility-group">
+          <button id="btn-demo-camera" class="comic-btn util-btn" title="Girar vista 180° alrededor de la matriz">
+            <span class="util-icon">🎥</span>
+            <span class="util-label">180°</span>
+          </button>
+          <button id="btn-toggle-cam-fx" class="comic-btn util-btn active" title="Activar/Desactivar balanceo dinámico de cámara">
+            <span class="util-icon">👁️</span>
+            <span id="cam-fx-label" class="util-label">CAM: ON</span>
+          </button>
+          <button id="btn-mute" class="comic-btn util-btn" title="Silenciar o activar sintetizador de audio">
+            <span id="mute-icon" class="util-icon">🔊</span>
+            <span id="mute-label" class="util-label">AUDIO</span>
+          </button>
+          <button id="btn-pause" class="comic-btn util-btn" title="Pausar el juego [P]">
+            <span class="util-icon">⏸️</span>
+            <span class="util-label">PAUSA</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. NEXT Queue Comic Card -->
+      <section class="comic-card next-card">
+        <div class="card-header">
+          <span class="comic-tag tag-cyan">SIGUIENTE</span>
+          <span class="card-counter">3 PZAS</span>
+        </div>
+        <div class="canvas-frame next-frame">
+          <canvas id="next-canvas" width="110" height="220"></canvas>
+        </div>
+        <div class="card-footer-tip">COLA DE ENTRADA</div>
+      </section>
+
+      <!-- 3. STATS Comic Card -->
+      <section class="comic-card stats-card">
+        <div class="card-header">
+          <span class="comic-tag tag-yellow">ESTADÍSTICAS</span>
+          <span class="card-icon">⚡</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">PUNTOS</span>
+            <span id="hud-score" class="stat-value highlight">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LÍNEAS</span>
+            <span id="hud-lines" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">NIVEL</span>
+            <span id="hud-level" class="stat-value">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">RACHA</span>
+            <span id="hud-combo" class="stat-value">0x</span>
+          </div>
+          <div class="stat-item stat-wide">
+            <span class="stat-label">SINCRONÍA RÍTMICA</span>
+            <span id="hud-sync-rate" class="stat-value sync-rate-value">100%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Compact Comic Keybind Sticker (positioned at bottom-right, ZERO floor blockage) -->
+      <div class="comic-keybind-sticker">
+        <div class="sticker-tag">COMANDOS</div>
+        <div class="sticker-grid">
+          <div class="key-item"><kbd>←</kbd><kbd>→</kbd> Mover</div>
+          <div class="key-item"><kbd>↑</kbd>/<kbd>X</kbd> Giro</div>
+          <div class="key-item"><kbd>Espacio</kbd> Drop</div>
+          <div class="key-item"><kbd>Z</kbd> Zona</div>
+          <div class="key-item"><kbd>C</kbd> Hold</div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODALS OVERLAYS (Hi-Fi Rush / Persona 5 Comic Style)     -->
+  <!-- ======================================================== -->
+
+  <!-- 1. START / WELCOME MODAL -->
+  <div id="start-modal" class="modal-backdrop">
+    <div class="modal-card comic-modal-card">
+      <div class="modal-halftone-overlay"></div>
+      
+      <!-- Persona 5 / Hi-Fi Rush Header Tag -->
+      <div class="modal-header">
+        <div class="modal-tag-pill comic-sticker-burst">ALL-OUT SENSOR JOURNEY</div>
+        <h1 class="modal-title">TETRIS EFFECT</h1>
+        <h2 class="modal-subtitle">SYNESTHESIA BEAT 3D</h2>
+      </div>
+
+      <p class="modal-description">
+        Sincroniza tus movimientos con el compás musical. Cada rotación, caída y línea limpiada detona ritmos interactivos y desata el flujo sensorial en el espacio 3D.
+      </p>
+
+      <!-- Stage Selector Grid in Modal -->
+      <div class="modal-stage-selector">
+        <div class="stage-select-label">ELIGE TU FASE INICIAL:</div>
+        <div class="stage-cards-grid">
+          <button class="stage-select-btn active" data-stage="0">
+            <div class="stage-card-icon">🪼</div>
+            <div class="stage-card-info">
+              <span class="stage-card-name">1. Abismo Marino</span>
+              <span class="stage-card-meta">110 BPM · D Dorian · Bioluminiscencia</span>
+            </div>
+            <div class="stage-card-badge">ACTIVA</div>
+          </button>
+
+          <button class="stage-select-btn" data-stage="1">
+            <div class="stage-card-icon">🌆</div>
+            <div class="stage-card-info">
+              <span class="stage-card-name">2. Metrópolis Cyberpunk</span>
+              <span class="stage-card-meta">128 BPM · F Minor · Neón & Glitch</span>
+            </div>
+            <div class="stage-card-badge">LISTA</div>
+          </button>
+
+          <button class="stage-select-btn" data-stage="2">
+            <div class="stage-card-icon">🌌</div>
+            <div class="stage-card-info">
+              <span class="stage-card-name">3. Cosmos Trascendental</span>
+              <span class="stage-card-meta">140 BPM · A Lydian · Polvo Estelar</span>
+            </div>
+            <div class="stage-card-badge">LISTA</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Controls Guide -->
+      <div class="modal-controls-guide">
+        <div class="guide-title">MANDOS DE COMBATE RÍTMICO:</div>
+        <div class="guide-grid">
+          <div class="guide-item"><span class="guide-keys"><kbd>←</kbd><kbd>→</kbd></span><span>Mover tetrominó</span></div>
+          <div class="guide-item"><span class="guide-keys"><kbd>↑</kbd> / <kbd>X</kbd></span><span>Giro horario / arpegio</span></div>
+          <div class="guide-item"><span class="guide-keys"><kbd>Z</kbd></span><span>Rotar / Modo Zona</span></div>
+          <div class="guide-item"><span class="guide-keys"><kbd>↓</kbd></span><span>Caída suave rítmica</span></div>
+          <div class="guide-item"><span class="guide-keys"><kbd>Espacio</kbd></span><span>Hard Drop instantáneo</span></div>
+          <div class="guide-item"><span class="guide-keys"><kbd>C</kbd> / <kbd>Shift</kbd></span><span>Guardar en HOLD</span></div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="modal-actions">
+        <button id="btn-start-journey" class="comic-btn modal-primary-btn">
+          <span class="btn-sparkle">⚡</span>
+          <span>¡INICIAR EL SHOW!</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2. PAUSE MODAL -->
+  <div id="pause-modal" class="modal-backdrop hidden">
+    <div class="modal-card comic-modal-card modal-card-sm">
+      <div class="modal-halftone-overlay"></div>
+      <div class="modal-header">
+        <div class="modal-tag-pill comic-sticker-burst tag-yellow">BREAK TIME!</div>
+        <h2 class="modal-title">EN PAUSA</h2>
+      </div>
+
+      <p class="modal-description text-center">
+        El flujo musical y la caída de piezas están congelados en el tiempo.
+      </p>
+
+      <div class="modal-actions-stacked">
+        <button id="btn-resume" class="comic-btn modal-primary-btn">
+          <span class="btn-icon">▶️</span>
+          <span>REANUDAR SHOW</span>
+        </button>
+        <button id="btn-restart-pause" class="comic-btn modal-secondary-btn">
+          <span class="btn-icon">🔄</span>
+          <span>REINICIAR SESIÓN</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. GAME OVER MODAL -->
+  <div id="gameover-modal" class="modal-backdrop hidden">
+    <div class="modal-card comic-modal-card modal-card-md">
+      <div class="modal-halftone-overlay"></div>
+      <div class="modal-header">
+        <div class="modal-tag-pill comic-sticker-burst tag-crimson">ALL-OUT FINISH</div>
+        <h2 id="gameover-title" class="modal-title">FIN DEL VIAJE</h2>
+        <p class="modal-subtitle">PUNTUACIÓN DE SINFONÍA</p>
+      </div>
+
+      <!-- Final Stats Grid -->
+      <div class="gameover-stats-grid">
+        <div class="stat-box-large">
+          <span class="box-label">PUNTUACIÓN FINAL</span>
+          <span id="final-score" class="box-value accent-text">0</span>
+        </div>
+
+        <div class="stat-mini-grid">
+          <div class="stat-item">
+            <span class="stat-label">LÍNEAS LIMPIADAS</span>
+            <span id="final-lines" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">MÁXIMO COMBO</span>
+            <span id="final-max-combo" class="stat-value">0x</span>
+          </div>
+          <div class="stat-item stat-wide">
+            <span class="stat-label">BONUS DE SINCRONÍA</span>
+            <span id="final-sync-bonus" class="stat-value">+0 PTS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-play-again" class="comic-btn modal-primary-btn">
+          <span class="btn-sparkle">🔥</span>
+          <span>¡VOLVER A TOCAR!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio & Game Scripts (Loaded in exact required sequence) -->
+  <script src="js/audio.js"></script>
+  <script src="js/visuals3d.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
